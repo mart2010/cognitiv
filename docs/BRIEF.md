@@ -8,7 +8,10 @@ Le projet naît d'une envie de créer, en tant qu'utilisateur, quelque chose d'o
 
 ## Goals
 
-- Une **plateforme d'accueil** mobile (une seule app sur les stores) qui accueille une multitude de jeux et d'exercices cognitifs : mémoire, logique, raisonnement, attention et concentration.
+- Une **plateforme d'accueil** mobile (une seule app sur les stores) qui accueille une multitude de jeux et d'exercices cognitifs, répartis par **domaine cognitif** (un jeu a un domaine principal, même s'il en touche plusieurs) :
+  - **Domaines du jalon v1** : attention et concentration, raisonnement et logique, mémoire de travail (court terme).
+  - **Domaines en réserve** (à considérer dans l'inventaire des jeux) : vitesse de traitement / réactivité, fonctions exécutives (inhibition, flexibilité mentale, planification), visuo-spatial, numérique.
+  - **Mémoire à long terme** : hors v1. Elle demande de la répétition espacée (rappels, retours sur plusieurs jours), en tension avec les non-goals et le format de partie courte. Une variante intra-partie (apprendre, distraction, rappeler) reste envisageable.
 - Public : **grand public adulte**, sans mineurs. Aucun trouble cognitif reconnu n'est visé.
 - Parties courtes par défaut. Pour les seuls jeux d'attention et de concentration, des **sessions à paliers progressifs** (ex. 8, 10, 12, 14 min) : l'app propose le palier suivant, l'utilisateur reste libre de choisir, un abandon n'est jamais pénalisé.
 - La plateforme mesure un score par jeu et par niveau, une progression globale (niveaux, régularité) et le temps passé (information neutre) pour entretenir la motivation.
@@ -23,11 +26,12 @@ Le projet naît d'une envie de créer, en tant qu'utilisateur, quelque chose d'o
 - Pas de multijoueur (solo uniquement).
 - Pas de compte utilisateur ni de serveur en v1.
 - Pas de création de jeux par les utilisateurs en v1 (évolution possible, pas un objectif).
-- Pas de jeux de mots ou lexicaux au départ (jeux sans texte ou presque).
+- Pas de jeux de mots ou lexicaux au départ. Le texte n'est pas interdit : les jeux de connaissances (hors v1) en ont besoin. Les jeux du jalon v1 restent légers en texte.
 
 ## Constraints
 
-- Développeur solo assisté par Claude, sans date butoir, sur Linux.
+- Développeur solo assisté par Claude, sans date butoir, sur Windows ou Linux.
+- Pile envisagée : Flutter (Dart), comme wordlai. À confirmer par un ADR au moment de la conception du domaine.
 - **Android d'abord** (téléphone et tablette), Apple ensuite. Compiler et publier pour iOS exige un Mac ou un service de build cloud, plus un appareil de test.
 - Fonctionnement 100 % hors ligne, données stockées sur l'appareil. Une politique de confidentialité reste obligatoire pour les stores.
 - Interface en français et en anglais.
@@ -36,15 +40,17 @@ Le projet naît d'une envie de créer, en tant qu'utilisateur, quelque chose d'o
 
 ## Success criteria
 
-- **Jalon technique** : 3 jeux jouables sur téléphone et tablette Android, un par famille (attention soutenue avec paliers, raisonnement/logique, mémoire), reliés par un écran d'accueil commun.
+- **Jalon technique** : 3 jeux jouables sur téléphone et tablette Android, un par domaine cognitif (attention soutenue avec paliers, raisonnement/logique, mémoire de travail), reliés par un écran d'accueil commun.
 - **Signal de valeur** : le créateur y joue de lui-même après 2 semaines, et au moins 3 proches adultes sur 5 rejouent sans qu'on le leur demande.
 - **Hypothèse à valider en premier** : des jeux d'entraînement peuvent être vraiment fun sans mécaniques addictives. Elle se teste avec un prototype jouable avant de construire le reste de la plateforme.
 
 ## Open questions
 
 - Références et repoussoirs (ambiance, design) : à traiter avec l'inventaire large des jeux, avant de choisir les 3 premiers. À décider avant le prototype.
-- Short-list des premiers jeux à partir d'un inventaire plus large, à faire ensemble.
-- Quels appareils Android sont disponibles pour tester (téléphone, tablette) ? Accès à un Mac ou à un iPhone ? À préciser avant de fixer l'ordre de livraison.
+- Short-list des premiers jeux à partir d'un inventaire plus large, à faire ensemble. L'inventaire couvre les domaines du jalon v1 et les domaines en réserve (vitesse de traitement et fonctions exécutives semblent les plus prometteuses pour des jeux fun).
+- Mémoire à long terme : la traiter un jour ou non, et sous quelle forme, sans répétition espacée intrusive. À réévaluer après la v1.
+- Acquisition de connaissances (culture) : ajouter à la dimension cognitive et ludique un apprentissage de contenu (ex. noms et emplacement des étoiles et constellations), qui donnerait un rôle à la mémoire à long terme et se généraliserait à d'autres domaines de connaissance. Hors jalon v1. Tensions à arbitrer : texte dans un produit « presque sans texte », ambiance « salle de classe », répétition espacée sans notifications ni streaks, licences des données astronomiques, état de maîtrise stocké sur l'appareil.
+- Appareils de test : un Pixel 8a (téléphone Android) est disponible. Tablette Android : à préciser (le jalon vise téléphone et tablette). Mac et iPhone : plus tard, à préciser avant de fixer l'ordre de livraison iOS.
 - Monétisation des bundles payants : avant la publication.
 - Sauvegarde optionnelle sur le Google Drive de l'utilisateur (reprise sur une autre appareil, ex. tablette) et équivalent iCloud plus tard : avant la publication.
 - Nom et pitch de l'app.
@@ -54,8 +60,11 @@ Le projet naît d'une envie de créer, en tant qu'utilisateur, quelque chose d'o
 
 ## Handoff to domain design
 
-- Vocabulaire à fixer : plateforme, app, jeu, bundle, séance, palier, session.
-- Deux familles de jeux : avec paliers (attention/concentration) et sans paliers.
+- Vocabulaire à fixer : plateforme, app, jeu, bundle, séance, palier, session, domaine cognitif, mode de séance, domaine de connaissance, pack de contenu.
+- Trois axes possibles de classification d'un jeu (le troisième, hors v1, n'existe que si l'acquisition de connaissances est retenue) :
+  - **domaine cognitif** (attention, raisonnement, mémoire de travail…) ;
+  - **mode de séance** : avec paliers (attention/concentration) ou sans paliers ;
+  - **domaine de connaissance** (astronomie, géographie…) : le contenu appris, porté par des packs de contenu, indépendant de la mécanique du jeu.
 - Score par jeu, par niveau, progression globale, temps passé : définition de chacun.
 - Profil local et stockage des données sur l'appareil, possible sauvegarde externe.
 - Catalogue de jeux et bundles (gratuits / payants).
