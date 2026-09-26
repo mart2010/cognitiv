@@ -12,7 +12,9 @@ Documents de référence : `BRIEF.md` (problème, périmètre, contraintes), `IN
   - Mémoire de travail : **La vitrine** (« qu'est-ce qui a changé ? »), retenu.
   - Attention : suivi d'objets multiples ou Vigilance, à trancher. Thème à trouver pour l'un et l'autre (pas le ciel étoilé, réservé aux jeux de connaissances).
 - Pile envisagée : Flutter (Dart), à confirmer par ADR. Appareil de test : Pixel 8a. Développement sous Windows ou Linux.
-- Premier jeu à construire : la Vitrine (logique la plus simple, teste l'hypothèse « fun sans mécaniques addictives »).
+- Premier jeu à construire : **L'atelier**. Les jeux de raisonnement et logique sont les plus difficiles à rendre fun et à concevoir (règles, générateur, unicité de solution), mais ils sont essentiels au concept. Si on n'y arrive pas, le concept ne tient pas : on le teste donc en premier. La Vitrine passe en deuxième.
+- Jeu de comparaison : une déduction sur grille à solution unique, du genre de Tango (famille Takuzu/Binairo) ou Queens (reines par régions colorées). Il partage avec L'atelier le couple générateur + solveur, avec un fun déjà éprouvé. Il sert de point de repère : si les deux se construisent bien mais que seul l'un est fun, on saura où est le problème (la mécanique ou le traitement). Retenu : Tango-like.
+- Revue de jeux existants faite en session : Samewise (Android) reprend déjà le format « règle cachée » sur grille. L'originalité de L'atelier devra venir du traitement (créatures, univers, sons) et de la qualité des énigmes.
 
 ## Décisions prises
 
@@ -24,7 +26,7 @@ Documents de référence : `BRIEF.md` (problème, périmètre, contraintes), `IN
 
 ## Prochaine étape
 
-- [ ] **Session `/grill-domain`**, avec la Vitrine comme cas concret. À couvrir :
+- [x] **Session `/grill-domain`** (faite : voir `CONTEXT-MAP.md`, les `CONTEXT.md` par contexte et `docs/adr/0001` à `0006`). Restait à couvrir, gardé pour mémoire, avec L'atelier comme cas concret et le Tango-like comme second cas (pour vérifier que le contrat jeu/plateforme tient pour deux jeux de nature différente). À couvrir :
   - Vocabulaire (CONTEXT.md) : plateforme, app, jeu, bundle, séance, palier, session, domaine cognitif, mode de séance, domaine de connaissance, pack de contenu. Trancher « bundle » (ensemble de jeux) contre « pack de contenu » (contenu d'un jeu).
   - Définitions : score par jeu et par niveau, progression globale, temps passé.
   - Contrat commun entre plateforme et jeu (comment un jeu s'ajoute, comment il reçoit du contenu généré ou de pack).
@@ -34,13 +36,16 @@ Documents de référence : `BRIEF.md` (problème, périmètre, contraintes), `IN
 
 ## À décider avant le prototype
 
+- [x] Choix du jeu de comparaison : **Tango-like** (Takuzu/Binairo), retenu. Utiliser les noms génériques du genre dans nos documents, pas les marques.
+- [ ] Avant tout code Flutter : jouer une heure à Samewise, puis écrire à la main 10 énigmes de L'atelier et les faire jouer à 2 ou 3 proches (où se trompent-ils, où s'ennuient-ils ?).
+
 - [ ] Références et repoussoirs d'ambiance (jeux, design, univers sonore).
 - [ ] Attention : suivi d'objets multiples ou Vigilance, et leur thème.
 - [ ] Tablette Android disponible pour tester ? (le jalon vise téléphone et tablette).
 
 ## Plus tard
 
-- [ ] Atelier (règles combinées, générateur, premiers packs écrits à la main).
+- [ ] La vitrine (deuxième jeu, mémoire de travail).
 - [ ] Jeu d'attention du jalon.
 - [ ] Monétisation des bundles et packs payants.
 - [ ] Sauvegarde sur Google Drive, puis iCloud.

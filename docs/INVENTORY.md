@@ -26,6 +26,13 @@ Une machine transforme des créatures (change une couleur, ajoute un élément, 
 - Difficulté : règles combinées (une, deux, trois), exemples de plus en plus rares.
 - Score : règles trouvées, bonus si moins d'exemples ont été nécessaires.
 
+### Comparaison : déduction sur grille à solution unique (Tango-like ou Queens-like)
+Jeu témoin, pas un candidat du jalon. Sert à séparer « la mécanique est-elle fun ? » de « notre traitement est-il fun ? » face à L'atelier.
+- Tango-like (famille Takuzu/Binairo) : remplir une grille de deux symboles sans jamais en aligner trois identiques, avec autant de chaque par ligne et colonne. Règles minimales, solveur très simple.
+- Queens-like : une reine par ligne, colonne et région colorée, sans contact en diagonale. Plus visuel.
+- Générateur + solveur vérifiant l'unicité : même travail que pour L'atelier. Format quotidien possible, à arbitrer plus tard.
+- Propriété intellectuelle : les mécaniques sont des genres anciens. Ne pas reprendre les noms ni l'habillage des jeux commerciaux.
+
 ### La vitrine (« qu'est-ce qui a changé ? »)
 Une étagère de 6 à 9 objets s'affiche 5 s, l'écran se brouille 1 s, puis un objet a bougé, changé ou disparu. On le touche.
 - Difficulté : plus d'objets, affichage plus court, changement plus discret.
@@ -112,7 +119,7 @@ Un contenu uniquement généré finit par répéter des motifs trop proches, ave
 
 - Références et repoussoirs (ambiance, design) : à traiter avant de figer les 3 jeux.
 - Attention : suivi d'objets multiples ou Vigilance pour le prototype ? Thème à trouver pour l'un et l'autre. (fun vs fidélité à « attention soutenue »).
-- Ordre de construction : commencer par l'Atelier ou la Vitrine.
+- Ordre de construction : décidé, l'Atelier d'abord (jeu de raisonnement, le plus risqué pour le concept), puis la Vitrine.
 - Appareil de test : Pixel 8a (Android). Mac et iPhone : plus tard.
 - Vocabulaire : « bundle » désigne aujourd'hui un ensemble de jeux. Un ensemble d'énigmes pour un jeu donné est autre chose (proposition : **pack de contenu**). À trancher dans CONTEXT.md.
 - Livraison des packs de contenu sans serveur en v1 : embarqués dans l'app, ou téléchargeables via le store (ex. livraison de ressources Google Play) ? Impact sur la monétisation et le hors-ligne.

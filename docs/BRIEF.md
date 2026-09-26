@@ -2,7 +2,7 @@
 
 ## Context
 
-Les apps et réseaux sociaux ont érodé l'attention et la concentration de chacun. Les apps de brain training existantes (Lumosity, Elevate, Peak, BrainHQ…) et les jeux de logique classiques sont souvent perçus comme « salle de classe », ou reposent sur des mécaniques d'engagement addictives.
+Les apps et réseaux sociaux ont érodé l'attention et la concentration de chacun. Les apps de brain training existantes (Lumosity, Elevate, Peak, BrainHQ…) et les jeux de logique classiques sont souvent perçus comme « salle de classe » ou comme des exercices plus que comme du jeu.
 
 Le projet naît d'une envie de créer, en tant qu'utilisateur, quelque chose d'original et fun : se divertir sans s'abrutir. L'originalité vient du traitement (design, ton, identité visuelle et sonore soignée), de jeux originaux et de la réinterprétation de formats existants (tests de type QI, exercices cognitifs), en s'inspirant des principes sans copier d'items ni de marques protégés.
 
@@ -21,7 +21,7 @@ Le projet naît d'une envie de créer, en tant qu'utilisateur, quelque chose d'o
 ## Non-goals
 
 - Pas de publicité.
-- Pas de mécaniques de culpabilisation ou d'addiction (streaks culpabilisants, notifications insistantes, boucles de récompense compulsives).
+- Pas de culpabilisation de l'utilisateur (streaks punitifs, notifications insistantes). Le jeu lui-même n'est pas bridé : un jeu très accrocheur est un bon jeu.
 - Pas de score de QI ni d'évaluation cognitive, pas de diagnostic, pas de ciblage TDAH.
 - Pas de multijoueur (solo uniquement).
 - Pas de compte utilisateur ni de serveur en v1.
@@ -42,7 +42,7 @@ Le projet naît d'une envie de créer, en tant qu'utilisateur, quelque chose d'o
 
 - **Jalon technique** : 3 jeux jouables sur téléphone et tablette Android, un par domaine cognitif (attention soutenue avec paliers, raisonnement/logique, mémoire de travail), reliés par un écran d'accueil commun.
 - **Signal de valeur** : le créateur y joue de lui-même après 2 semaines, et au moins 3 proches adultes sur 5 rejouent sans qu'on le leur demande.
-- **Hypothèse à valider en premier** : des jeux d'entraînement peuvent être vraiment fun sans mécaniques addictives. Elle se teste avec un prototype jouable avant de construire le reste de la plateforme.
+- **Hypothèse à valider en premier** : des jeux qui sollicitent réflexion et attention peuvent être vraiment fun, au point qu'on veuille rejouer. Elle se teste avec un prototype jouable avant de construire le reste de la plateforme. Le prototype est un jeu de raisonnement et logique (L'atelier), le type de jeu le plus difficile à concevoir et essentiel au concept : s'il échoue, le concept est à revoir.
 
 ## Open questions
 
