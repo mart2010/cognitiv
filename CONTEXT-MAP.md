@@ -10,6 +10,6 @@ Un contexte est ajouté par jeu, quand ses premiers termes sont réglés.
 
 ## Relationships
 
-- **Plateforme → Jeu**: la plateforme demande une partie pour un niveau donné, puis relaie les réponses du joueur au jeu, qui les évalue.
-- **Jeu → Plateforme**: le jeu fournit ses énigmes, le score, l'état de reprise et si le niveau est franchi. Il ne connaît ni le profil ni les autres jeux.
+- **Plateforme → Jeu**: la plateforme demande une partie pour un niveau donné, en transmettant les préférences du jeu si elle en stocke (ex. Profil de génération de L'atelier), puis relaie les réponses du joueur au jeu, qui les évalue.
+- **Jeu → Plateforme**: le jeu fournit ses énigmes, le score, l'état de reprise, ses éventuelles préférences de joueur et si le niveau est franchi. Il ne connaît ni le profil ni les autres jeux.
 - **Plateforme ↔ Jeux**: vocabulaire partagé (Énigme, Partie, Niveau, Score), défini côté plateforme et respecté à l'identique par chaque jeu.

@@ -34,6 +34,7 @@ Documents de référence : `BRIEF.md` (problème, périmètre, contraintes), `IN
   - Rotation 180° comme règle explicite et nommée, plutôt que laissée comme composition implicite de deux miroirs (moins lisible pour le joueur, qui perçoit une rotation 180° comme un seul geste).
   - Décalage cyclique (façon tore) de lignes ou colonnes de la grille entière — distinct de la gravité (qui dépend des cases vides) et du taquin (qui ne déplace que la case vide seule) ; fonctionne même sur une grille pleine.
   - Transposition selon la diagonale secondaire (anti-diagonale), retenue aux côtés de la transposition actuelle (diagonale principale) : aucune raison de l'exclure.
+- Session `/grill-domain` du 2026-09-28 (L'atelier) : vocabulaire stabilisé et reporté dans `games/workshop/CONTEXT.md` (Matrice, Cellule, Forme, Rôle de case vide, Règle, Famille de règle, Catalogue de règles enrichi, Profil de génération). Nom du jeu tranché : on garde **L'atelier** (« The Matrix » écarté, marque tierce). Le Profil de génération est une préférence du joueur par jeu (pas par niveau), stockée comme donnée opaque au même titre que l'état de reprise ; une Règle est un couple (Famille, paramètres), ce qui permet de combiner plusieurs Règles d'une même Famille quand le joueur restreint ses Familles actives. Voir ADR 0008.
 
 ## Prochaine étape
 
@@ -51,8 +52,8 @@ Documents de référence : `BRIEF.md` (problème, périmètre, contraintes), `IN
 - [x] Jouer à Samewise (fait en session). Retour : format à règle cachée sur grille carrée, mais limité aux transformations 2D simples (couleur de case) ; a motivé l'exploration du modèle de L'atelier ci-dessus.
 - [x] Écrire des énigmes de L'atelier à la main — remplacé par un générateur (10 énigmes, chacune vérifiée automatiquement contre un catalogue de règles avant d'être présentée, dans l'esprit de l'ADR 0001). Plus robuste qu'écrire à la main, et permet de rejouer une énigme avec une instance neuve à chaque fois.
 - [x] **Faire jouer 2 ou 3 proches** au prototype (fait ; retours en main — voir les décisions du 2026-09-28 ci-dessus : règles couleur/forme et conditionnelles pas intuitives, filtre de règles à ajouter, pistes de géométrie à explorer).
-- [ ] Trancher le nom (« The Matrix » vs « L'atelier »).
-- [ ] Reporter le vocabulaire stabilisé dans `games/workshop/CONTEXT.md` : catalogue de règles enrichi (rotation 180°, décalage cyclique, anti-diagonale), et nommer le concept de filtre de règles / profil de génération (à trancher en `/grill-domain`).
+- [x] Trancher le nom : on garde **L'atelier** (« The Matrix » était un nom de travail, écarté car marque tierce).
+- [x] Reporter le vocabulaire stabilisé dans `games/workshop/CONTEXT.md` : catalogue de règles enrichi (rotation 180°, décalage cyclique, anti-diagonale), et concept de filtre de règles nommé **Profil de génération** (voir `games/workshop/CONTEXT.md` et ADR 0008).
 - [ ] Passer un coup d'habillage visuel/sonore avant de conclure que le concept plaît (le prototype reste volontairement neutre pour isoler la mécanique).
 - [ ] Mode de réponse plus difficile, à explorer une fois le format à choix multiples validé : au lieu de proposer 4 grilles à choisir, laisser construire la solution soi-même sur une grille vide (choisir la forme et la couleur de chaque cellule). Retire l'indice des dimensions et l'élimination par distracteurs implausibles ; probablement réservé aux niveaux avancés.
 
