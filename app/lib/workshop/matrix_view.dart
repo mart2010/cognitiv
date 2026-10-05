@@ -51,11 +51,28 @@ class _MatrixPainter extends CustomPainter {
         canvas.drawOval(bounds, paint);
       case workshop.Shape.square:
         canvas.drawRRect(RRect.fromRectAndRadius(bounds, Radius.circular(bounds.width * 0.12)), paint);
-      case workshop.Shape.triangle:
+      case workshop.Shape.cross:
+        // Symétrique sous rotation à 90° : une Règle de Rotation ne tourne que la
+        // position des Cellules, jamais le glyphe, donc la forme doit rester
+        // identique à elle-même peu importe l'angle (`shape.dart`).
+        final armThickness = bounds.shortestSide / 3;
+        final left = bounds.center.dx - armThickness / 2;
+        final right = bounds.center.dx + armThickness / 2;
+        final top = bounds.center.dy - armThickness / 2;
+        final bottom = bounds.center.dy + armThickness / 2;
         final path = Path()
-          ..moveTo(bounds.center.dx, bounds.top)
-          ..lineTo(bounds.right, bounds.bottom)
-          ..lineTo(bounds.left, bounds.bottom)
+          ..moveTo(left, bounds.top)
+          ..lineTo(right, bounds.top)
+          ..lineTo(right, top)
+          ..lineTo(bounds.right, top)
+          ..lineTo(bounds.right, bottom)
+          ..lineTo(right, bottom)
+          ..lineTo(right, bounds.bottom)
+          ..lineTo(left, bounds.bottom)
+          ..lineTo(left, bottom)
+          ..lineTo(bounds.left, bottom)
+          ..lineTo(bounds.left, top)
+          ..lineTo(left, top)
           ..close();
         canvas.drawPath(path, paint);
       case workshop.Shape.empty:

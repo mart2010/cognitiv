@@ -17,7 +17,8 @@ _Avoid_: Case, tuile
 _Code_: `Cell`
 
 **Forme**:
-L'apparence géométrique d'une Cellule : Rond, Carré, Triangle, ou Vide.
+L'apparence géométrique d'une Cellule : Rond, Carré, Croix, ou Vide. Les trois formes non vides ont volontairement une symétrie de rotation à 90° (aucune n'a de « sens »), pour qu'une Règle de Rotation, qui ne déplace que les Cellules sans tourner leur glyphe, ne paraisse jamais incohérente.
+_Avoid_: Triangle (écarté : sa base change de sens sous une rotation, trahissant que le glyphe lui-même n'est pas tourné)
 _Code_: `Shape`
 
 **Couleur**:

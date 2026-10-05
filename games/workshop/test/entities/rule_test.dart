@@ -6,8 +6,8 @@ Cell _e(EmptyCellRole role) => Cell.empty(role);
 
 void main() {
   final abc = Matrix([
-    [_f(Shape.round, Color.red), _f(Shape.square, Color.blue), _f(Shape.triangle, Color.green)],
-    [_f(Shape.square, Color.green), _f(Shape.triangle, Color.red), _f(Shape.round, Color.blue)],
+    [_f(Shape.round, Color.red), _f(Shape.square, Color.blue), _f(Shape.cross, Color.green)],
+    [_f(Shape.square, Color.green), _f(Shape.cross, Color.red), _f(Shape.round, Color.blue)],
   ]);
 
   group('MirrorRule', () {
@@ -62,7 +62,7 @@ void main() {
       final column = Matrix([
         [_f(Shape.round, Color.red)],
         [_f(Shape.square, Color.blue)],
-        [_f(Shape.triangle, Color.green)],
+        [_f(Shape.cross, Color.green)],
       ]);
       final result = const CyclicShiftRule(Axis.row, Direction.down).apply(column);
       expect(result.cellAt(0, 0), column.cellAt(2, 0));
@@ -125,14 +125,14 @@ void main() {
         [_e(EmptyCellRole.fixed)],
         [_f(Shape.square, Color.blue)],
         [_e(EmptyCellRole.active)],
-        [_f(Shape.triangle, Color.green)],
+        [_f(Shape.cross, Color.green)],
       ]);
       final result = const GravityRule(Direction.down).apply(column);
       expect(result.cellAt(0, 0), _f(Shape.round, Color.red), reason: 'seule dans son segment');
       expect(result.cellAt(1, 0), _e(EmptyCellRole.fixed), reason: 'le mur ne se déplace jamais');
       expect(result.cellAt(2, 0), _e(EmptyCellRole.active));
       expect(result.cellAt(3, 0), _f(Shape.square, Color.blue));
-      expect(result.cellAt(4, 0), _f(Shape.triangle, Color.green));
+      expect(result.cellAt(4, 0), _f(Shape.cross, Color.green));
     });
   });
 
@@ -172,9 +172,9 @@ void main() {
       final matrix = Matrix([
         [_f(Shape.round, Color.red), _f(Shape.round, Color.blue)],
       ]);
-      final rule = const ConditionalRule(Color.red, Shape.triangle);
+      final rule = const ConditionalRule(Color.red, Shape.cross);
       final result = rule.apply(matrix);
-      expect(result.cellAt(0, 0), _f(Shape.triangle, Color.red));
+      expect(result.cellAt(0, 0), _f(Shape.cross, Color.red));
       expect(result.cellAt(0, 1), _f(Shape.round, Color.blue), reason: 'couleur non déclenchée');
     });
   });

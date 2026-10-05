@@ -15,7 +15,7 @@ class RuleCatalog {
 
   const RuleCatalog({
     this.colorOrder = Color.values,
-    this.shapeOrder = const [Shape.round, Shape.square, Shape.triangle],
+    this.shapeOrder = const [Shape.round, Shape.square, Shape.cross],
   });
 
   List<Rule> rulesFor({required int rowCount, required int columnCount}) => [

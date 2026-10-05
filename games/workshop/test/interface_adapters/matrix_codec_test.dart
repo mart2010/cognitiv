@@ -6,7 +6,7 @@ import 'package:workshop/workshop.dart';
 void main() {
   final matrix = Matrix([
     [Cell.filled(Shape.round, Color.red), Cell.empty(EmptyCellRole.active)],
-    [Cell.empty(EmptyCellRole.fixed), Cell.filled(Shape.triangle, Color.green)],
+    [Cell.empty(EmptyCellRole.fixed), Cell.filled(Shape.cross, Color.green)],
   ]);
 
   test('aller-retour toJson/fromJson préserve la Matrice', () {

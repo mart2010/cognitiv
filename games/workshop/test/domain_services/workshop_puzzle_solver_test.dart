@@ -6,7 +6,7 @@ Cell _f(Shape shape, Color color) => Cell.filled(shape, color);
 void main() {
   final input = Matrix([
     [_f(Shape.round, Color.red), _f(Shape.square, Color.blue)],
-    [_f(Shape.triangle, Color.green), _f(Shape.round, Color.yellow)],
+    [_f(Shape.cross, Color.green), _f(Shape.round, Color.yellow)],
   ]);
   final solver = WorkshopPuzzleSolver();
 

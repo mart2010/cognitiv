@@ -12,8 +12,8 @@ void main() {
     const SlidingRule(Direction.left),
     const GravityRule(Direction.up),
     ColorCycleRule(CycleScope.singleRow, const [Color.red, Color.blue], lineIndex: 1, steps: 2),
-    ShapeCycleRule(CycleScope.global, const [Shape.round, Shape.square, Shape.triangle]),
-    const ConditionalRule(Color.green, Shape.triangle),
+    ShapeCycleRule(CycleScope.global, const [Shape.round, Shape.square, Shape.cross]),
+    const ConditionalRule(Color.green, Shape.cross),
   ];
 
   for (final rule in rules) {

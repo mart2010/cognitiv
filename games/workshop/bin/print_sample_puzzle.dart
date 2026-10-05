@@ -73,7 +73,7 @@ String _renderCell(Cell cell) {
   final shapeLetter = switch (cell.shape) {
     Shape.round => 'O',
     Shape.square => 'S',
-    Shape.triangle => 'T',
+    Shape.cross => 'X',
     Shape.empty => '?',
   };
   final colorLetter = cell.color!.name[0].toUpperCase();
