@@ -50,7 +50,7 @@ class _WorkshopPlayScreenState extends State<WorkshopPlayScreen> {
   Widget build(BuildContext context) {
     final puzzle = _puzzle;
     return Scaffold(
-      appBar: AppBar(title: const Text("L'atelier")),
+      appBar: AppBar(title: const Text("L'atelier de transformations")),
       body: SafeArea(
         child: puzzle == null
             ? Center(

@@ -48,7 +48,7 @@ class _PuzzleViewState extends State<PuzzleView> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Text('Exemples de la règle cachée', style: theme.textTheme.titleMedium),
+        Text('Exemples', style: theme.textTheme.titleMedium),
         const SizedBox(height: 8),
         for (final example in puzzle.examples)
           Padding(
