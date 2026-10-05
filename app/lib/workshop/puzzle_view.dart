@@ -48,7 +48,7 @@ class _PuzzleViewState extends State<PuzzleView> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Text('Exemples', style: theme.textTheme.titleMedium),
+        Text('Exemples de la règle cachée', style: theme.textTheme.titleMedium),
         const SizedBox(height: 8),
         for (final example in puzzle.examples)
           Padding(
@@ -63,9 +63,18 @@ class _PuzzleViewState extends State<PuzzleView> {
             ),
           ),
         const Divider(height: 32),
-        Text('Question', style: theme.textTheme.titleMedium),
+        Text('Nouveau cas à résoudre', style: theme.textTheme.titleMedium),
         const SizedBox(height: 8),
-        Center(child: MatrixView(matrix: puzzle.question, cellSize: 36)),
+        Center(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              MatrixView(matrix: puzzle.question, cellSize: 36),
+              const Padding(padding: EdgeInsets.symmetric(horizontal: 12), child: Icon(Icons.arrow_forward)),
+              _unknownAnswerPlaceholder(context, puzzle.question, 36),
+            ],
+          ),
+        ),
         const Divider(height: 32),
         Text('Votre réponse', style: theme.textTheme.titleMedium),
         const SizedBox(height: 8),
@@ -95,6 +104,23 @@ class _PuzzleViewState extends State<PuzzleView> {
           FilledButton(onPressed: widget.onNext, child: const Text('Suivant')),
         ],
       ],
+    );
+  }
+
+  /// Case inconnue à droite de la flèche, à la place de la sortie attendue.
+  /// Dimensionnée sur la Question (pas sur la vraie réponse) pour ne jamais
+  /// trahir un changement de dimensions avant que les choix ne soient regardés.
+  Widget _unknownAnswerPlaceholder(BuildContext context, workshop.Matrix sizeLike, double cellSize) {
+    final outline = Theme.of(context).colorScheme.outline;
+    return Container(
+      width: sizeLike.columnCount * cellSize,
+      height: sizeLike.rowCount * cellSize,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        border: Border.all(color: outline, width: 1.5),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text('?', style: Theme.of(context).textTheme.headlineMedium),
     );
   }
 
