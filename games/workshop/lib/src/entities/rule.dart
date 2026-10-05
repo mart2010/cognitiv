@@ -26,10 +26,23 @@ int _mod(int value, int modulus) => ((value % modulus) + modulus) % modulus;
       Direction.right => (0, 1),
     };
 
+/// Égalité profonde : un champ de `Rule` peut lui-même être une `List` (l'ordre de
+/// `ColorCycleRule`/`ShapeCycleRule`), que `List.==` ne compare que par référence.
+bool _deepEquals(Object? a, Object? b) {
+  if (a is List && b is List) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (!_deepEquals(a[i], b[i])) return false;
+    }
+    return true;
+  }
+  return a == b;
+}
+
 bool _listEquals(List<Object?> a, List<Object?> b) {
   if (a.length != b.length) return false;
   for (var i = 0; i < a.length; i++) {
-    if (a[i] != b[i]) return false;
+    if (!_deepEquals(a[i], b[i])) return false;
   }
   return true;
 }
@@ -51,8 +64,10 @@ sealed class Rule {
       other is Rule && other.runtimeType == runtimeType && _listEquals(fields, other.fields);
 
   @override
-  int get hashCode => Object.hash(runtimeType, Object.hashAll(fields));
+  int get hashCode => Object.hash(runtimeType, Object.hashAll(fields.map(_deepHash)));
 }
+
+int _deepHash(Object? value) => value is List ? Object.hashAll(value.map(_deepHash)) : value.hashCode;
 
 /// Applique une combinaison ordonnée de Règles à une Matrice (fold séquentiel).
 extension RuleComboApplication on List<Rule> {
@@ -166,10 +181,10 @@ final class CyclicShiftRule extends Rule {
 }
 
 /// Taquin : chaque case vide Active se déplace d'une position dans la direction donnée,
-/// en échangeant sa place avec la Cellule qui s'y trouvait. Ne franchit jamais le bord de
-/// la Matrice. Limite connue : si deux cases vides Actives sont adjacentes dans le sens du
-/// déplacement, l'ordre de traitement peut affecter le résultat (chaîne de glissements) ;
-/// à revisiter si le générateur en produit.
+/// en échangeant sa place avec la Cellule remplie qui s'y trouvait. Ne franchit jamais le
+/// bord de la Matrice, et ne touche jamais une autre case vide (Active ou Fixe) : une case
+/// vide Fixe agit comme un mur, comme pour la Gravité, et deux cases vides Actives adjacentes
+/// ne se déplacent pas l'une dans l'autre (ça n'aurait de toute façon aucun effet visible).
 final class SlidingRule extends Rule {
   final Direction direction;
   const SlidingRule(this.direction);
@@ -192,8 +207,10 @@ final class SlidingRule extends Rule {
         final cell = input.cellAt(r, c);
         if (cell.isEmpty && cell.emptyRole == EmptyCellRole.active) {
           final targetRow = r + dr, targetCol = c + dc;
-          if (targetRow >= 0 && targetRow < rows && targetCol >= 0 && targetCol < columns) {
-            result[r][c] = input.cellAt(targetRow, targetCol);
+          final inBounds = targetRow >= 0 && targetRow < rows && targetCol >= 0 && targetCol < columns;
+          final target = inBounds ? input.cellAt(targetRow, targetCol) : null;
+          if (target != null && !target.isEmpty) {
+            result[r][c] = target;
             result[targetRow][targetCol] = cell;
           }
         }

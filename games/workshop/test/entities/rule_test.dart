@@ -84,6 +84,16 @@ void main() {
       expect(result.cellAt(2, 0), _e(EmptyCellRole.active), reason: 'la case vide descend');
     });
 
+    test('une case vide Fixe agit comme un mur, comme pour la Gravité', () {
+      final column = Matrix([
+        [_e(EmptyCellRole.active)],
+        [_e(EmptyCellRole.fixed)],
+        [_f(Shape.round, Color.red)],
+      ]);
+      final result = const SlidingRule(Direction.down).apply(column);
+      expect(result, column, reason: 'le mur bloque le glissement, rien ne bouge');
+    });
+
     test('ne franchit jamais le bord de la Matrice', () {
       final column = Matrix([
         [_e(EmptyCellRole.active)],

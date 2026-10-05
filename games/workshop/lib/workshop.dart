@@ -17,6 +17,12 @@ export 'src/entities/workshop_puzzle.dart';
 
 export 'src/domain_services/workshop_puzzle_solver.dart';
 
+export 'src/interface_adapters/generation_profile_codec.dart';
+export 'src/interface_adapters/matrix_codec.dart';
+export 'src/interface_adapters/rule_codec.dart';
+export 'src/interface_adapters/system_random_source.dart';
+export 'src/interface_adapters/workshop_puzzle_codec.dart';
+
 export 'src/use_cases/compute_workshop_score.dart';
 export 'src/use_cases/evaluate_workshop_answer.dart';
 export 'src/use_cases/generate_workshop_puzzle.dart';
