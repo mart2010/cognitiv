@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:cognitiv_app/audio/game_sounds.dart';
+import 'package:cognitiv_app/workshop/celebration.dart';
 import 'package:cognitiv_app/workshop/puzzle_view.dart';
 import 'package:workshop/workshop.dart' as workshop;
 
@@ -7,13 +9,11 @@ import 'package:workshop/workshop.dart' as workshop;
 /// réponse est à l'indice 1.
 workshop.WorkshopPuzzle _puzzle() {
   workshop.Matrix row(workshop.Shape a, workshop.Shape b) => workshop.Matrix([
-        [workshop.Cell.filled(a, workshop.Color.red), workshop.Cell.filled(b, workshop.Color.blue)],
-      ]);
+    [workshop.Cell.filled(a, workshop.Color.red), workshop.Cell.filled(b, workshop.Color.blue)],
+  ]);
   final question = row(workshop.Shape.round, workshop.Shape.square);
   return workshop.WorkshopPuzzle(
-    examples: [
-      workshop.WorkshopExample(question, question),
-    ],
+    examples: [workshop.WorkshopExample(question, question)],
     question: question,
     answerChoices: [
       row(workshop.Shape.round, workshop.Shape.square),
@@ -24,17 +24,32 @@ workshop.WorkshopPuzzle _puzzle() {
   );
 }
 
+class _RecordingSounds implements GameSounds {
+  final played = <String>[];
+
+  @override
+  void tap() => played.add('tap');
+
+  @override
+  void success() => played.add('success');
+
+  @override
+  void failure() => played.add('failure');
+}
+
 Future<void> _pump(WidgetTester tester, {void Function(bool)? onAnswered, VoidCallback? onNext}) {
-  return tester.pumpWidget(MaterialApp(
-    home: Scaffold(
-      body: PuzzleView(
-        puzzle: _puzzle(),
-        evaluate: workshop.EvaluateWorkshopAnswer(),
-        onAnswered: onAnswered,
-        onNext: onNext ?? () {},
+  return tester.pumpWidget(
+    MaterialApp(
+      home: Scaffold(
+        body: PuzzleView(
+          puzzle: _puzzle(),
+          evaluate: workshop.EvaluateWorkshopAnswer(),
+          onAnswered: onAnswered,
+          onNext: onNext ?? () {},
+        ),
       ),
     ),
-  ));
+  );
 }
 
 void main() {
@@ -92,5 +107,51 @@ void main() {
     await tester.tap(find.text('Suivant'));
 
     expect(next, 1);
+  });
+
+  testWidgets('la réussite joue le son de succès et lance la célébration', (tester) async {
+    final sounds = _RecordingSounds();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: PuzzleView(
+            puzzle: _puzzle(),
+            evaluate: workshop.EvaluateWorkshopAnswer(),
+            sounds: sounds,
+            onNext: () {},
+          ),
+        ),
+      ),
+    );
+    expect(find.byType(SuccessCelebration), findsNothing);
+
+    await tester.tap(find.byKey(const Key('choice-1')));
+    await tester.pump();
+
+    expect(sounds.played, ['tap', 'success']);
+    expect(find.byType(SuccessCelebration), findsOneWidget);
+    await tester.pump(const Duration(seconds: 3));
+  });
+
+  testWidgets("l'échec joue un son doux et ne célèbre pas", (tester) async {
+    final sounds = _RecordingSounds();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: PuzzleView(
+            puzzle: _puzzle(),
+            evaluate: workshop.EvaluateWorkshopAnswer(),
+            sounds: sounds,
+            onNext: () {},
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byKey(const Key('choice-0')));
+    await tester.pump();
+
+    expect(sounds.played, ['tap', 'failure']);
+    expect(find.byType(SuccessCelebration), findsNothing);
   });
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:workshop/workshop.dart' as workshop;
 
+import '../audio/game_sounds.dart';
 import 'puzzle_view.dart';
 
 /// Écran de jeu de L'atelier : enchaîne des Énigmes générées, dans le mode de réponse
@@ -10,11 +11,13 @@ class WorkshopPlayScreen extends StatefulWidget {
   final workshop.GenerateWorkshopPuzzle generate;
   final workshop.EvaluateWorkshopAnswer evaluate;
   final workshop.GenerationProfile profile;
+  final GameSounds sounds;
 
   const WorkshopPlayScreen({
     super.key,
     required this.generate,
     required this.evaluate,
+    this.sounds = const SilentGameSounds(),
     this.profile = workshop.GenerationProfile.intuitiveDefaults,
   });
 
@@ -86,6 +89,7 @@ class _WorkshopPlayScreenState extends State<WorkshopPlayScreen> {
             : PuzzleView(
                 key: ValueKey(_round),
                 mode: _mode,
+                sounds: widget.sounds,
                 puzzle: puzzle,
                 evaluate: widget.evaluate,
                 onNext: _next,

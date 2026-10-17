@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:workshop/workshop.dart' as workshop;
 
+import '../audio/game_sounds.dart';
 import 'matrix_view.dart';
 import 'workshop_palette.dart';
 
@@ -14,6 +15,7 @@ class ConstructAnswerView extends StatefulWidget {
   final int columnCount;
   final workshop.EmptyCellRole emptyRole;
   final bool enabled;
+  final GameSounds sounds;
   final void Function(workshop.Matrix answer) onSubmit;
 
   const ConstructAnswerView({
@@ -23,6 +25,7 @@ class ConstructAnswerView extends StatefulWidget {
     required this.emptyRole,
     required this.onSubmit,
     this.enabled = true,
+    this.sounds = const SilentGameSounds(),
   });
 
   @override
@@ -52,6 +55,7 @@ class _ConstructAnswerViewState extends State<ConstructAnswerView> {
 
   void _paintCell(int row, int column) {
     if (!widget.enabled) return;
+    widget.sounds.tap();
     setState(() => _grid = _grid.withCell(row, column, _brush));
   }
 
