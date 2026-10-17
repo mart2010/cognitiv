@@ -58,4 +58,57 @@ void main() {
 
     expect(result, isA<GenerationFailed>());
   });
+
+  test('un seul Rôle de case vide par Énigme, et Actif pour la Gravité et le Taquin', () {
+    final generator = GenerateWorkshopPuzzle(catalog: catalog, random: SystemRandomSource(42));
+    for (var i = 0; i < 100; i++) {
+      final result = generator(const GenerateWorkshopPuzzleRequest(
+        rowCount: 4,
+        columnCount: 4,
+        ruleCount: 1,
+        exampleCount: 3,
+        profile: GenerationProfile({RuleFamily.sliding, RuleFamily.gravity}),
+      ));
+      if (result is! GenerationSucceeded) continue;
+      final puzzle = result.puzzle;
+      final roles = <EmptyCellRole>{};
+      for (final matrix in [puzzle.question, for (final e in puzzle.examples) e.input]) {
+        for (var r = 0; r < matrix.rowCount; r++) {
+          for (var c = 0; c < matrix.columnCount; c++) {
+            final role = matrix.cellAt(r, c).emptyRole;
+            if (role != null) roles.add(role);
+          }
+        }
+      }
+      expect(roles.length, lessThanOrEqualTo(1));
+      expect(roles, {EmptyCellRole.active}, reason: 'Gravité et Taquin imposent le Rôle Actif');
+      final questionHasActive = [
+        for (var r = 0; r < puzzle.question.rowCount; r++)
+          for (var c = 0; c < puzzle.question.columnCount; c++) puzzle.question.cellAt(r, c).emptyRole,
+      ].contains(EmptyCellRole.active);
+      expect(questionHasActive, isTrue, reason: 'la Question contient au moins une case Active');
+    }
+  });
+
+  test('la Règle a un effet visible sur chaque Exemple et sur la Question', () {
+    final generator = GenerateWorkshopPuzzle(catalog: catalog, random: SystemRandomSource(7));
+    var generated = 0;
+    for (var i = 0; i < 100; i++) {
+      final result = generator(const GenerateWorkshopPuzzleRequest(
+        rowCount: 3,
+        columnCount: 3,
+        ruleCount: 1,
+        exampleCount: 2,
+        profile: GenerationProfile({RuleFamily.sliding, RuleFamily.gravity, RuleFamily.mirror}),
+      ));
+      if (result is! GenerationSucceeded) continue;
+      generated++;
+      final puzzle = result.puzzle;
+      for (final example in puzzle.examples) {
+        expect(example.output, isNot(example.input));
+      }
+      expect(puzzle.correctAnswer, isNot(puzzle.question));
+    }
+    expect(generated, greaterThan(50));
+  });
 }

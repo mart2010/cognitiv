@@ -6,6 +6,7 @@ import '../entities/generation_profile.dart';
 import '../entities/matrix.dart';
 import '../entities/rule.dart';
 import '../entities/rule_catalog.dart';
+import '../entities/rule_family.dart';
 import '../entities/shape.dart';
 import '../entities/workshop_puzzle.dart';
 import 'ports/random_source.dart';
@@ -55,6 +56,7 @@ final class GenerationFailed extends GenerationResult {
 class GenerateWorkshopPuzzle {
   static const double _emptyCellProbability = 0.15;
   static const double _activeRoleProbability = 0.5;
+  static const int _maxEffectAttempts = 50;
 
   final RuleCatalog catalog;
   final RandomSource random;
@@ -81,10 +83,15 @@ class GenerateWorkshopPuzzle {
       );
     }
 
-    final examples = [
-      for (var i = 0; i < request.exampleCount; i++) _generateExample(combo, request),
-    ];
-    final question = _randomMatrix(request.rowCount, request.columnCount);
+    final emptyRole = _pickEmptyRole(combo);
+    final examples = <WorkshopExample>[];
+    for (var i = 0; i < request.exampleCount; i++) {
+      final input = _randomMatrixWithEffect(combo, request, emptyRole);
+      if (input == null) return _noEffectFailure(request);
+      examples.add(WorkshopExample(input, combo.applyTo(input)));
+    }
+    final question = _randomMatrixWithEffect(combo, request, emptyRole);
+    if (question == null) return _noEffectFailure(request);
     final correctAnswer = combo.applyTo(question);
 
     final consistentCombos = solver.findConsistentCombos(
@@ -131,19 +138,62 @@ class GenerateWorkshopPuzzle {
     return combo;
   }
 
-  WorkshopExample _generateExample(List<Rule> combo, GenerateWorkshopPuzzleRequest request) {
-    final input = _randomMatrix(request.rowCount, request.columnCount);
-    return WorkshopExample(input, combo.applyTo(input));
+  bool _dependsOnActiveEmptyCells(Rule rule) =>
+      rule.family == RuleFamily.sliding || rule.family == RuleFamily.gravity;
+
+  /// Sans case vide Active dans la Question, la Gravité et le Taquin n'ont aucun effet :
+  /// la bonne réponse serait identique à la Question. On en force donc au moins une.
+  Matrix _withActiveEmptyCell(Matrix matrix) {
+    for (var r = 0; r < matrix.rowCount; r++) {
+      for (var c = 0; c < matrix.columnCount; c++) {
+        if (matrix.cellAt(r, c).emptyRole == EmptyCellRole.active) return matrix;
+      }
+    }
+    return matrix.withCell(
+      random.nextInt(matrix.rowCount),
+      random.nextInt(matrix.columnCount),
+      Cell.empty(EmptyCellRole.active),
+    );
   }
 
-  Matrix _randomMatrix(int rowCount, int columnCount) {
+  /// Un seul Rôle de case vide par Énigme (Exemples et Question), jamais un mélange : en
+  /// construction libre, deux Rôles au rendu identique laisseraient le joueur remplir une
+  /// case Fixe comme une Active sans s'être trompé sur la Règle (`docs/PLAN.md`). La
+  /// Gravité et le Taquin n'agissent que sur des cases Actives, donc ils l'imposent ;
+  /// sinon, tirage au sort.
+  EmptyCellRole _pickEmptyRole(List<Rule> combo) {
+    if (combo.any(_dependsOnActiveEmptyCells)) return EmptyCellRole.active;
+    return random.nextDouble() < _activeRoleProbability ? EmptyCellRole.active : EmptyCellRole.fixed;
+  }
+
+  /// Tire une Matrice sur laquelle la combinaison de Règles a un effet visible : une
+  /// transformation sans effet (réponse identique à l'entrée) rendrait l'Exemple ou la
+  /// Question peu parlants. Si la combinaison dépend des cases vides Actives, on en force
+  /// au moins une. Renvoie null si aucun tirage n'y parvient dans la limite d'essais.
+  Matrix? _randomMatrixWithEffect(
+    List<Rule> combo,
+    GenerateWorkshopPuzzleRequest request,
+    EmptyCellRole emptyRole,
+  ) {
+    for (var attempt = 0; attempt < _maxEffectAttempts; attempt++) {
+      var matrix = _randomMatrix(request.rowCount, request.columnCount, emptyRole);
+      if (combo.any(_dependsOnActiveEmptyCells)) matrix = _withActiveEmptyCell(matrix);
+      if (combo.applyTo(matrix) != matrix) return matrix;
+    }
+    return null;
+  }
+
+  GenerationFailed _noEffectFailure(GenerateWorkshopPuzzleRequest request) => GenerationFailed(
+        'Aucune matrice ${request.rowCount}x${request.columnCount} tirée sur laquelle la '
+        'combinaison de règles ait un effet visible.',
+      );
+
+  Matrix _randomMatrix(int rowCount, int columnCount, EmptyCellRole emptyRole) {
     final shapes = Shape.values.where((s) => s != Shape.empty).toList();
     final colors = Color.values;
     return Matrix.generate(rowCount, columnCount, (r, c) {
       if (random.nextDouble() < _emptyCellProbability) {
-        final role =
-            random.nextDouble() < _activeRoleProbability ? EmptyCellRole.active : EmptyCellRole.fixed;
-        return Cell.empty(role);
+        return Cell.empty(emptyRole);
       }
       return Cell.filled(shapes[random.nextInt(shapes.length)], colors[random.nextInt(colors.length)]);
     });
