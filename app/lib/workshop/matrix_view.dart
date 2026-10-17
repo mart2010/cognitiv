@@ -9,14 +9,30 @@ class MatrixView extends StatelessWidget {
   final workshop.Matrix matrix;
   final double cellSize;
 
-  const MatrixView({super.key, required this.matrix, this.cellSize = 28});
+  /// Appelé avec la ligne et la colonne touchées ; null pour une Matrice non interactive.
+  final void Function(int row, int column)? onCellTap;
+
+  const MatrixView({super.key, required this.matrix, this.cellSize = 28, this.onCellTap});
 
   @override
   Widget build(BuildContext context) {
     final outline = Theme.of(context).colorScheme.outline;
-    return CustomPaint(
+    final paint = CustomPaint(
       size: Size(matrix.columnCount * cellSize, matrix.rowCount * cellSize),
       painter: _MatrixPainter(matrix, outline),
+    );
+    final onCellTap = this.onCellTap;
+    if (onCellTap == null) return paint;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTapDown: (details) {
+        final row = (details.localPosition.dy / cellSize).floor();
+        final column = (details.localPosition.dx / cellSize).floor();
+        if (row >= 0 && row < matrix.rowCount && column >= 0 && column < matrix.columnCount) {
+          onCellTap(row, column);
+        }
+      },
+      child: paint,
     );
   }
 }
@@ -33,8 +49,12 @@ class _MatrixPainter extends CustomPainter {
     final cellHeight = size.height / matrix.rowCount;
     for (var r = 0; r < matrix.rowCount; r++) {
       for (var c = 0; c < matrix.columnCount; c++) {
-        final bounds = Rect.fromLTWH(c * cellWidth, r * cellHeight, cellWidth, cellHeight)
-            .deflate(cellWidth * 0.12);
+        final bounds = Rect.fromLTWH(
+          c * cellWidth,
+          r * cellHeight,
+          cellWidth,
+          cellHeight,
+        ).deflate(cellWidth * 0.12);
         _paintCell(canvas, matrix.cellAt(r, c), bounds);
       }
     }
@@ -50,7 +70,10 @@ class _MatrixPainter extends CustomPainter {
       case workshop.Shape.round:
         canvas.drawOval(bounds, paint);
       case workshop.Shape.square:
-        canvas.drawRRect(RRect.fromRectAndRadius(bounds, Radius.circular(bounds.width * 0.12)), paint);
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(bounds, Radius.circular(bounds.width * 0.12)),
+          paint,
+        );
       case workshop.Shape.cross:
         // Symétrique sous rotation à 90° : une Règle de Rotation ne tourne que la
         // position des Cellules, jamais le glyphe, donc la forme doit rester
