@@ -10,7 +10,7 @@ void main() {
     const TranspositionRule(Diagonal.secondary),
     const CyclicShiftRule(Axis.row, Direction.down, steps: 2),
     const SlidingRule(Direction.left),
-    const GravityRule(Direction.up),
+    const PackingRule(Direction.up),
     ColorCycleRule(CycleScope.singleRow, const [Color.red, Color.blue], lineIndex: 1, steps: 2),
     ShapeCycleRule(CycleScope.global, const [Shape.round, Shape.square, Shape.cross]),
     const ConditionalRule(Color.green, Shape.cross),

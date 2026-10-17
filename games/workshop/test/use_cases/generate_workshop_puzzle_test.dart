@@ -59,7 +59,7 @@ void main() {
     expect(result, isA<GenerationFailed>());
   });
 
-  test('un seul Rôle de case vide par Énigme, et Actif pour la Gravité et le Taquin', () {
+  test('un seul Rôle de case vide par Énigme, et Actif pour le Tassement et le Taquin', () {
     final generator = GenerateWorkshopPuzzle(catalog: catalog, random: SystemRandomSource(42));
     for (var i = 0; i < 100; i++) {
       final result = generator(const GenerateWorkshopPuzzleRequest(
@@ -67,7 +67,7 @@ void main() {
         columnCount: 4,
         ruleCount: 1,
         exampleCount: 3,
-        profile: GenerationProfile({RuleFamily.sliding, RuleFamily.gravity}),
+        profile: GenerationProfile({RuleFamily.sliding, RuleFamily.packing}),
       ));
       if (result is! GenerationSucceeded) continue;
       final puzzle = result.puzzle;
@@ -81,7 +81,7 @@ void main() {
         }
       }
       expect(roles.length, lessThanOrEqualTo(1));
-      expect(roles, {EmptyCellRole.active}, reason: 'Gravité et Taquin imposent le Rôle Actif');
+      expect(roles, {EmptyCellRole.active}, reason: 'Tassement et Taquin imposent le Rôle Actif');
       final questionHasActive = [
         for (var r = 0; r < puzzle.question.rowCount; r++)
           for (var c = 0; c < puzzle.question.columnCount; c++) puzzle.question.cellAt(r, c).emptyRole,
@@ -99,7 +99,7 @@ void main() {
         columnCount: 3,
         ruleCount: 1,
         exampleCount: 2,
-        profile: GenerationProfile({RuleFamily.sliding, RuleFamily.gravity, RuleFamily.mirror}),
+        profile: GenerationProfile({RuleFamily.sliding, RuleFamily.packing, RuleFamily.mirror}),
       ));
       if (result is! GenerationSucceeded) continue;
       generated++;

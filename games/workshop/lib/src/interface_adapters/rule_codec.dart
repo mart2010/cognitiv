@@ -22,7 +22,7 @@ extension RuleJsonEncoding on Rule {
             'steps': steps,
           },
         SlidingRule(direction: final direction) => {'family': 'sliding', 'direction': direction.name},
-        GravityRule(direction: final direction) => {'family': 'gravity', 'direction': direction.name},
+        PackingRule(direction: final direction) => {'family': 'packing', 'direction': direction.name},
         ColorCycleRule(scope: final scope, order: final order, lineIndex: final lineIndex, steps: final steps) => {
             'family': 'colorCycle',
             'scope': scope.name,
@@ -58,7 +58,7 @@ class RuleCodec {
           steps: json['steps'] as int,
         ),
       RuleFamily.sliding => SlidingRule(Direction.values.byName(json['direction'] as String)),
-      RuleFamily.gravity => GravityRule(Direction.values.byName(json['direction'] as String)),
+      RuleFamily.packing => PackingRule(Direction.values.byName(json['direction'] as String)),
       RuleFamily.colorCycle => ColorCycleRule(
           CycleScope.values.byName(json['scope'] as String),
           [for (final name in json['order'] as List) Color.values.byName(name as String)],

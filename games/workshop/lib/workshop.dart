@@ -24,6 +24,7 @@ export 'src/interface_adapters/rule_codec.dart';
 export 'src/interface_adapters/system_random_source.dart';
 export 'src/interface_adapters/workshop_puzzle_codec.dart';
 
+export 'src/use_cases/check_workshop_level_availability.dart';
 export 'src/use_cases/compute_workshop_score.dart';
 export 'src/use_cases/evaluate_workshop_answer.dart';
 export 'src/use_cases/generate_workshop_puzzle.dart';

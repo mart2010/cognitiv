@@ -67,7 +67,8 @@ sealed class Rule {
   int get hashCode => Object.hash(runtimeType, Object.hashAll(fields.map(_deepHash)));
 }
 
-int _deepHash(Object? value) => value is List ? Object.hashAll(value.map(_deepHash)) : value.hashCode;
+int _deepHash(Object? value) =>
+    value is List ? Object.hashAll(value.map(_deepHash)) : value.hashCode;
 
 /// Applique une combinaison ordonnée de Règles à une Matrice (fold séquentiel).
 extension RuleComboApplication on List<Rule> {
@@ -89,8 +90,8 @@ final class MirrorRule extends Rule {
   Matrix apply(Matrix input) => switch (axis) {
         MirrorAxis.horizontal => Matrix.generate(
             input.rowCount, input.columnCount, (r, c) => input.cellAt(input.rowCount - 1 - r, c)),
-        MirrorAxis.vertical => Matrix.generate(
-            input.rowCount, input.columnCount, (r, c) => input.cellAt(r, input.columnCount - 1 - c)),
+        MirrorAxis.vertical => Matrix.generate(input.rowCount, input.columnCount,
+            (r, c) => input.cellAt(r, input.columnCount - 1 - c)),
       };
 
   @override
@@ -111,8 +112,8 @@ final class RotationRule extends Rule {
 
   @override
   Matrix apply(Matrix input) => switch (angle) {
-        RotationAngle.clockwise90 => Matrix.generate(input.columnCount, input.rowCount,
-            (r, c) => input.cellAt(input.rowCount - 1 - c, r)),
+        RotationAngle.clockwise90 => Matrix.generate(
+            input.columnCount, input.rowCount, (r, c) => input.cellAt(input.rowCount - 1 - c, r)),
         RotationAngle.counterClockwise90 => Matrix.generate(input.columnCount, input.rowCount,
             (r, c) => input.cellAt(c, input.columnCount - 1 - r)),
         RotationAngle.half180 => Matrix.generate(input.rowCount, input.columnCount,
@@ -170,10 +171,12 @@ final class CyclicShiftRule extends Rule {
     final rows = input.rowCount, columns = input.columnCount;
     if (axis == Axis.row) {
       final sign = direction == Direction.down ? 1 : -1;
-      return Matrix.generate(rows, columns, (r, c) => input.cellAt(_mod(r - sign * steps, rows), c));
+      return Matrix.generate(
+          rows, columns, (r, c) => input.cellAt(_mod(r - sign * steps, rows), c));
     }
     final sign = direction == Direction.right ? 1 : -1;
-    return Matrix.generate(rows, columns, (r, c) => input.cellAt(r, _mod(c - sign * steps, columns)));
+    return Matrix.generate(
+        rows, columns, (r, c) => input.cellAt(r, _mod(c - sign * steps, columns)));
   }
 
   @override
@@ -183,7 +186,7 @@ final class CyclicShiftRule extends Rule {
 /// Taquin : chaque case vide Active se déplace d'une position dans la direction donnée,
 /// en échangeant sa place avec la Cellule remplie qui s'y trouvait. Ne franchit jamais le
 /// bord de la Matrice, et ne touche jamais une autre case vide (Active ou Fixe) : une case
-/// vide Fixe agit comme un mur, comme pour la Gravité, et deux cases vides Actives adjacentes
+/// vide Fixe agit comme un mur, comme pour le Tassement, et deux cases vides Actives adjacentes
 /// ne se déplacent pas l'une dans l'autre (ça n'aurait de toute façon aucun effet visible).
 final class SlidingRule extends Rule {
   final Direction direction;
@@ -207,7 +210,8 @@ final class SlidingRule extends Rule {
         final cell = input.cellAt(r, c);
         if (cell.isEmpty && cell.emptyRole == EmptyCellRole.active) {
           final targetRow = r + dr, targetCol = c + dc;
-          final inBounds = targetRow >= 0 && targetRow < rows && targetCol >= 0 && targetCol < columns;
+          final inBounds =
+              targetRow >= 0 && targetRow < rows && targetCol >= 0 && targetCol < columns;
           final target = inBounds ? input.cellAt(targetRow, targetCol) : null;
           if (target != null && !target.isEmpty) {
             result[r][c] = target;
@@ -223,15 +227,16 @@ final class SlidingRule extends Rule {
   String toString() => 'SlidingRule($direction)';
 }
 
-/// Gravité : les Cellules non vides tombent vers un bord de la Matrice, comblant les
-/// cases vides Actives sur leur passage ; une case vide Fixe arrête la chute comme un mur
-/// et découpe la ligne ou la colonne en segments indépendants.
-final class GravityRule extends Rule {
+/// Tassement : les Cellules non vides se tassent contre un bord de la Matrice (selon la
+/// direction de la Règle), comblant les cases vides Actives sur leur passage ; une case
+/// vide Fixe les arrête comme un mur et découpe la ligne ou la colonne en segments
+/// indépendants.
+final class PackingRule extends Rule {
   final Direction direction;
-  const GravityRule(this.direction);
+  const PackingRule(this.direction);
 
   @override
-  RuleFamily get family => RuleFamily.gravity;
+  RuleFamily get family => RuleFamily.packing;
 
   @override
   List<Object?> get fields => [direction];
@@ -259,7 +264,8 @@ final class GravityRule extends Rule {
 
       var segmentStart = 0;
       for (var i = 0; i <= lineLength; i++) {
-        final isBoundary = i == lineLength || (at(i).isEmpty && at(i).emptyRole == EmptyCellRole.fixed);
+        final isBoundary =
+            i == lineLength || (at(i).isEmpty && at(i).emptyRole == EmptyCellRole.fixed);
         if (isBoundary) {
           final segment = [for (var j = segmentStart; j < i; j++) at(j)];
           final ordered = _collapseSegment(segment, towardStart);
@@ -281,7 +287,7 @@ final class GravityRule extends Rule {
   }
 
   @override
-  String toString() => 'GravityRule($direction)';
+  String toString() => 'PackingRule($direction)';
 }
 
 /// Cycle de couleur : avance la Couleur d'une ou plusieurs Cellules d'un cran dans un

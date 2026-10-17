@@ -104,7 +104,16 @@ class _WorkshopRunScreenState extends State<WorkshopRunScreen> {
       ),
       body: SafeArea(
         child: puzzles == null
-            ? const Center(child: Text('Impossible de générer une énigme à ce niveau.'))
+            ? const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Text(
+                    'Impossible de générer une énigme à ce niveau avec les règles actives.\n'
+                    'Active d’autres familles de règles dans les réglages.',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              )
             : result != null
             ? _RunResultView(
                 level: widget.level,

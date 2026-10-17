@@ -7,7 +7,7 @@ enum RuleFamily {
   transposition,
   cyclicShift,
   sliding,
-  gravity,
+  packing,
   colorCycle,
   shapeCycle,
   conditional,

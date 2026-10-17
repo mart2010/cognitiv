@@ -26,7 +26,7 @@ L'une des couleurs d'une palette fixe qu'une Cellule non vide peut porter.
 _Code_: `Color`
 
 **Rôle de case vide**:
-Un attribut de Cellule, valide seulement quand sa Forme est Vide : Active (une Règle peut la cibler précisément — vider une cellule, taquin, gravité) ou Fixe (jamais ciblée, sert seulement à alléger les grandes Matrices). Rendu identique pour les deux (pointillé), pour ne jamais trahir la règle par un motif toujours vide dans les exemples.
+Un attribut de Cellule, valide seulement quand sa Forme est Vide : Active (une Règle peut la cibler précisément — vider une cellule, taquin, tassement) ou Fixe (jamais ciblée, sert seulement à alléger les grandes Matrices). Rendu identique pour les deux (pointillé), pour ne jamais trahir la règle par un motif toujours vide dans les exemples.
 _Avoid_: Type de case vide
 _Code_: `EmptyCellRole`
 
@@ -60,7 +60,7 @@ Famille de règle qui reflète la Matrice selon sa diagonale principale ou sa di
 _Code_: `Transposition`
 
 **Décalage cyclique**:
-Famille de règle qui décale les lignes ou colonnes de la Matrice en boucle (façon tore), sans dépendre de cases vides. Distincte de la Gravité (qui en dépend) et du Taquin (qui ne déplace que la case vide).
+Famille de règle qui décale les lignes ou colonnes de la Matrice en boucle (façon tore), sans dépendre de cases vides. Distincte de le Tassement (qui en dépend) et du Taquin (qui ne déplace que la case vide).
 _Avoid_: Rotation de ligne, wrap
 _Code_: `CyclicShift`
 
@@ -69,9 +69,10 @@ Famille de règle où seule une case vide Active se déplace d'une position dans
 _Avoid_: Glissement
 _Code_: `Sliding`
 
-**Gravité**:
-Famille de règle où les Cellules non vides tombent vers un bord de la Matrice, comblant les cases vides Actives sur leur passage.
-_Code_: `Gravity`
+**Tassement**:
+Famille de règle où toutes les Cellules non vides se tassent contre un bord de la Matrice (haut, bas, gauche ou droite, selon la Règle), comblant les cases vides Actives sur leur passage. Contrairement au Taquin, qui ne déplace chaque case vide Active que d'un cran, le Tassement va jusqu'au bout.
+_Avoid_: Gravité (laisse croire que les formes tombent toujours vers le bas)
+_Code_: `Packing`
 
 **Cycle de couleur**:
 Famille de règle qui avance la Couleur d'une ou plusieurs Cellules d'un cran dans un ordre fixe, globalement ou limitée à une ligne ou une colonne. Repérée en playtest comme peu intuitive.

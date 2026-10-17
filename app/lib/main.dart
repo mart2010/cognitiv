@@ -3,6 +3,7 @@ import 'package:workshop/workshop.dart' as workshop;
 
 import 'audio/game_sounds.dart';
 import 'theme/app_theme.dart';
+import 'workshop/profile/workshop_profile.dart';
 import 'workshop/progress/workshop_progress.dart';
 import 'workshop/workshop_home_screen.dart';
 import 'workshop/workshop_services.dart';
@@ -17,6 +18,7 @@ void main() {
         ),
         evaluate: workshop.EvaluateWorkshopAnswer(),
         progress: WorkshopProgressController(SharedPreferencesProgressStore()),
+        profileController: WorkshopProfileController(SharedPreferencesProfileStore()),
         sounds: AudioPlayersGameSounds(),
       ),
     ),

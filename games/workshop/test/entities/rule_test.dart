@@ -84,7 +84,7 @@ void main() {
       expect(result.cellAt(2, 0), _e(EmptyCellRole.active), reason: 'la case vide descend');
     });
 
-    test('une case vide Fixe agit comme un mur, comme pour la Gravité', () {
+    test('une case vide Fixe agit comme un mur, comme pour le Tassement', () {
       final column = Matrix([
         [_e(EmptyCellRole.active)],
         [_e(EmptyCellRole.fixed)],
@@ -104,7 +104,7 @@ void main() {
     });
   });
 
-  group('GravityRule', () {
+  group('PackingRule', () {
     test('les Cellules non vides tombent, les cases Actives bullent', () {
       final column = Matrix([
         [_f(Shape.round, Color.red)],
@@ -112,7 +112,7 @@ void main() {
         [_f(Shape.square, Color.blue)],
         [_e(EmptyCellRole.active)],
       ]);
-      final result = const GravityRule(Direction.down).apply(column);
+      final result = const PackingRule(Direction.down).apply(column);
       expect(result.cellAt(0, 0), _e(EmptyCellRole.active));
       expect(result.cellAt(1, 0), _e(EmptyCellRole.active));
       expect(result.cellAt(2, 0), _f(Shape.round, Color.red), reason: 'ordre relatif conservé');
@@ -127,7 +127,7 @@ void main() {
         [_e(EmptyCellRole.active)],
         [_f(Shape.cross, Color.green)],
       ]);
-      final result = const GravityRule(Direction.down).apply(column);
+      final result = const PackingRule(Direction.down).apply(column);
       expect(result.cellAt(0, 0), _f(Shape.round, Color.red), reason: 'seule dans son segment');
       expect(result.cellAt(1, 0), _e(EmptyCellRole.fixed), reason: 'le mur ne se déplace jamais');
       expect(result.cellAt(2, 0), _e(EmptyCellRole.active));

@@ -149,9 +149,9 @@ class GenerateWorkshopPuzzle {
   }
 
   bool _dependsOnActiveEmptyCells(Rule rule) =>
-      rule.family == RuleFamily.sliding || rule.family == RuleFamily.gravity;
+      rule.family == RuleFamily.sliding || rule.family == RuleFamily.packing;
 
-  /// Sans case vide Active dans la Question, la Gravité et le Taquin n'ont aucun effet :
+  /// Sans case vide Active dans la Question, le Tassement et le Taquin n'ont aucun effet :
   /// la bonne réponse serait identique à la Question. On en force donc au moins une.
   Matrix _withActiveEmptyCell(Matrix matrix) {
     for (var r = 0; r < matrix.rowCount; r++) {
@@ -169,7 +169,7 @@ class GenerateWorkshopPuzzle {
   /// Un seul Rôle de case vide par Énigme (Exemples et Question), jamais un mélange : en
   /// construction libre, deux Rôles au rendu identique laisseraient le joueur remplir une
   /// case Fixe comme une Active sans s'être trompé sur la Règle (`docs/PLAN.md`). La
-  /// Gravité et le Taquin n'agissent que sur des cases Actives, donc ils l'imposent ;
+  /// Tassement et le Taquin n'agissent que sur des cases Actives, donc ils l'imposent ;
   /// sinon, tirage au sort.
   EmptyCellRole _pickEmptyRole(List<Rule> combo) {
     if (combo.any(_dependsOnActiveEmptyCells)) return EmptyCellRole.active;

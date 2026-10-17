@@ -18,7 +18,7 @@ class GenerationProfile {
     RuleFamily.transposition,
     RuleFamily.cyclicShift,
     RuleFamily.sliding,
-    RuleFamily.gravity,
+    RuleFamily.packing,
     RuleFamily.colorCycle,
     RuleFamily.shapeCycle,
     RuleFamily.conditional,
@@ -32,6 +32,6 @@ class GenerationProfile {
     RuleFamily.transposition,
     RuleFamily.cyclicShift,
     RuleFamily.sliding,
-    RuleFamily.gravity,
+    RuleFamily.packing,
   });
 }
