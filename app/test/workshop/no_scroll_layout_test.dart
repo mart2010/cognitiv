@@ -6,7 +6,12 @@ import 'package:workshop/workshop.dart' as workshop;
 /// Écran d'un Pixel 8a (412 × 915 dp) moins la barre d'état et la barre de navigation.
 const _pixelSize = Size(412, 780);
 
-Future<void> _pump(WidgetTester tester, {required AnswerMode mode, int seed = 3}) async {
+Future<void> _pump(
+  WidgetTester tester, {
+  required AnswerMode mode,
+  int seed = 3,
+  workshop.WorkshopLevel? level,
+}) async {
   tester.view.physicalSize = _pixelSize;
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.reset);
@@ -15,7 +20,7 @@ Future<void> _pump(WidgetTester tester, {required AnswerMode mode, int seed = 3}
       home: Scaffold(
         body: SafeArea(
           child: PuzzleView(
-            puzzle: _generate(seed),
+            puzzle: _generate(seed, level),
             evaluate: workshop.EvaluateWorkshopAnswer(),
             mode: mode,
             onNext: () {},
@@ -26,20 +31,25 @@ Future<void> _pump(WidgetTester tester, {required AnswerMode mode, int seed = 3}
   );
 }
 
-workshop.WorkshopPuzzle _generate(int seed) {
+workshop.WorkshopPuzzle _generate(int seed, [workshop.WorkshopLevel? level]) {
   final generate = workshop.GenerateWorkshopPuzzle(
     catalog: const workshop.RuleCatalog(),
     random: workshop.SystemRandomSource(seed),
   );
   for (var i = 0; i < 20; i++) {
     final result = generate(
-      const workshop.GenerateWorkshopPuzzleRequest(
-        rowCount: 3,
-        columnCount: 3,
-        ruleCount: 1,
-        exampleCount: 2,
-        profile: workshop.GenerationProfile.intuitiveDefaults,
-      ),
+      level != null
+          ? workshop.GenerateWorkshopPuzzleRequest.forLevel(
+              level,
+              profile: workshop.GenerationProfile.intuitiveDefaults,
+            )
+          : const workshop.GenerateWorkshopPuzzleRequest(
+              rowCount: 3,
+              columnCount: 3,
+              ruleCount: 1,
+              exampleCount: 2,
+              profile: workshop.GenerationProfile.intuitiveDefaults,
+            ),
     );
     if (result is workshop.GenerationSucceeded) return result.puzzle;
   }
@@ -88,4 +98,15 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.text('Suivant'), findsOneWidget);
   });
+
+  for (final mode in AnswerMode.values) {
+    testWidgets('${mode.name} : le plus grand Niveau tient sans défilement ni débordement', (
+      tester,
+    ) async {
+      await _pump(tester, mode: mode, level: workshop.WorkshopLevels.byNumber(9));
+
+      expect(find.byType(Scrollable), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+  }
 }

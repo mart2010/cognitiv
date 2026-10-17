@@ -128,9 +128,15 @@ class _PuzzleViewState extends State<PuzzleView> {
                                       child: Row(
                                         mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
-                                          MatrixView(matrix: example.input),
+                                          MatrixView(
+                                            matrix: example.input,
+                                            cellSize: _exampleCell(example.input),
+                                          ),
                                           _arrow(context),
-                                          MatrixView(matrix: example.output),
+                                          MatrixView(
+                                            matrix: example.output,
+                                            cellSize: _exampleCell(example.output),
+                                          ),
                                         ],
                                       ),
                                     ),
@@ -144,9 +150,16 @@ class _PuzzleViewState extends State<PuzzleView> {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  MatrixView(matrix: puzzle.question, cellSize: 36),
+                                  MatrixView(
+                                    matrix: puzzle.question,
+                                    cellSize: _questionCell(puzzle.question),
+                                  ),
                                   _arrow(context),
-                                  _unknownAnswerPlaceholder(context, puzzle.question, 36),
+                                  _unknownAnswerPlaceholder(
+                                    context,
+                                    puzzle.question,
+                                    _questionCell(puzzle.question),
+                                  ),
                                 ],
                               ),
                             ),
@@ -299,6 +312,20 @@ class _PuzzleViewState extends State<PuzzleView> {
     );
   }
 
+  /// Taille de case réduite pour que les grandes Matrices (jusqu'à 4×5) tiennent dans la
+  /// largeur et la hauteur disponibles ; les petites gardent la taille de base.
+  double _fit(double base, workshop.Matrix m, double maxWidth, double maxHeight) {
+    final fitted = [
+      base,
+      maxWidth / m.columnCount,
+      maxHeight / m.rowCount,
+    ].reduce((a, b) => a < b ? a : b);
+    return fitted.floorToDouble();
+  }
+
+  double _exampleCell(workshop.Matrix m) => _fit(28, m, 136, 110);
+  double _questionCell(workshop.Matrix m) => _fit(36, m, 136, 120);
+
   /// Case inconnue à droite de la flèche, à la place de la sortie attendue.
   /// Dimensionnée sur la Question (pas sur la vraie réponse) pour ne jamais
   /// trahir un changement de dimensions avant que les choix ne soient regardés.
@@ -344,7 +371,10 @@ class _PuzzleViewState extends State<PuzzleView> {
           ),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: MatrixView(matrix: widget.puzzle.answerChoices[index], cellSize: 30),
+        child: MatrixView(
+          matrix: widget.puzzle.answerChoices[index],
+          cellSize: _fit(30, widget.puzzle.answerChoices[index], 130, 100),
+        ),
       ),
     );
   }

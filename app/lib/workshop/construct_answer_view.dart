@@ -45,6 +45,13 @@ class _ConstructAnswerViewState extends State<ConstructAnswerView> {
   var _brushShape = workshop.Shape.round;
   var _brushColor = workshop.Color.defaultPalette.first;
 
+  /// 44 pour une grille 3×3, réduit pour les grandes grilles afin qu'elles tiennent à
+  /// côté du pinceau (jusqu'à 4×5).
+  double get _cellSize {
+    final fitted = [44.0, 144 / _columns, 150 / _rows].reduce((a, b) => a < b ? a : b);
+    return fitted.floorToDouble();
+  }
+
   workshop.Matrix _blankGrid() =>
       workshop.Matrix.generate(_rows, _columns, (_, _) => workshop.Cell.empty(widget.emptyRole));
 
@@ -90,7 +97,7 @@ class _ConstructAnswerViewState extends State<ConstructAnswerView> {
               child: MatrixView(
                 key: const Key('construct-grid'),
                 matrix: _grid,
-                cellSize: 44,
+                cellSize: _cellSize,
                 onCellTap: widget.enabled ? _paintCell : null,
               ),
             ),
@@ -113,7 +120,8 @@ class _ConstructAnswerViewState extends State<ConstructAnswerView> {
                     spacing: 6,
                     runSpacing: 6,
                     children: [
-                      for (final color in workshop.Color.defaultPalette) _colorButton(scheme, color),
+                      for (final color in workshop.Color.defaultPalette)
+                        _colorButton(scheme, color),
                     ],
                   ),
                 ],

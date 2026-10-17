@@ -3,14 +3,30 @@ import 'package:workshop/workshop.dart' as workshop;
 
 import 'audio/game_sounds.dart';
 import 'theme/app_theme.dart';
-import 'workshop/workshop_play_screen.dart';
+import 'workshop/progress/workshop_progress.dart';
+import 'workshop/workshop_home_screen.dart';
+import 'workshop/workshop_services.dart';
 
 void main() {
-  runApp(const CognitivApp());
+  runApp(
+    CognitivApp(
+      services: WorkshopServices(
+        generate: workshop.GenerateWorkshopPuzzle(
+          catalog: const workshop.RuleCatalog(),
+          random: workshop.SystemRandomSource(),
+        ),
+        evaluate: workshop.EvaluateWorkshopAnswer(),
+        progress: WorkshopProgressController(SharedPreferencesProgressStore()),
+        sounds: AudioPlayersGameSounds(),
+      ),
+    ),
+  );
 }
 
 class CognitivApp extends StatelessWidget {
-  const CognitivApp({super.key});
+  final WorkshopServices services;
+
+  const CognitivApp({super.key, required this.services});
 
   @override
   Widget build(BuildContext context) {
@@ -18,14 +34,7 @@ class CognitivApp extends StatelessWidget {
       title: 'Cognitiv',
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
-      home: WorkshopPlayScreen(
-        sounds: AudioPlayersGameSounds(),
-        generate: workshop.GenerateWorkshopPuzzle(
-          catalog: const workshop.RuleCatalog(),
-          random: workshop.SystemRandomSource(),
-        ),
-        evaluate: workshop.EvaluateWorkshopAnswer(),
-      ),
+      home: WorkshopHomeScreen(services: services),
     );
   }
 }

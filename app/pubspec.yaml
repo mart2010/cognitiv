@@ -10,6 +10,7 @@ dependencies:
   audioplayers: ^6.8.1
   flutter:
     sdk: flutter
+  shared_preferences: ^2.5.6
   workshop:
     path: ../games/workshop
 
