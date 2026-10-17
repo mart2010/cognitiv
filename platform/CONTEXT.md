@@ -35,7 +35,7 @@ _Avoid_: Échec, forfait
 _Code_: `Abandon`
 
 **Niveau**:
-Un réglage de difficulté défini par un jeu (ex. nombre de règles combinées et d'exemples). Le joueur débloque le suivant en réussissant assez bien une partie, et peut toujours rejouer un niveau plus facile. La difficulté ne s'adapte pas en secret pendant la partie.
+Un réglage de difficulté défini par un jeu (ex. nombre de règles combinées et d'exemples). Aucun niveau n'est verrouillé : le joueur choisit librement de monter ou de descendre, et le jeu peut seulement lui suggérer le niveau suivant après une partie (verdict « niveau franchi »). La difficulté ne s'adapte pas en secret pendant la partie. Le score d'un jeu peut tenir compte du niveau (une bonne réponse vaut plus à un niveau difficile).
 _Avoid_: Palier, étape, difficulté adaptative
 _Code_: `Level`
 

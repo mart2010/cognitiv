@@ -13,6 +13,7 @@ export 'src/entities/rule_catalog.dart';
 export 'src/entities/rule_family.dart';
 export 'src/entities/shape.dart';
 export 'src/entities/workshop_answer.dart';
+export 'src/entities/workshop_level.dart';
 export 'src/entities/workshop_puzzle.dart';
 
 export 'src/domain_services/workshop_puzzle_solver.dart';

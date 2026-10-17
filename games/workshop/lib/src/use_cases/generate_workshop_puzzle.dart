@@ -7,6 +7,7 @@ import '../entities/rule.dart';
 import '../entities/rule_catalog.dart';
 import '../entities/rule_family.dart';
 import '../entities/shape.dart';
+import '../entities/workshop_level.dart';
 import '../entities/workshop_puzzle.dart';
 import 'ports/random_source.dart';
 
@@ -28,6 +29,16 @@ class GenerateWorkshopPuzzleRequest {
     required this.profile,
     this.choiceCount = 4,
   });
+
+  /// Requête qui vise la complexité d'un Niveau, pour le Profil de génération du joueur.
+  GenerateWorkshopPuzzleRequest.forLevel(
+    WorkshopLevel level, {
+    required this.profile,
+    this.choiceCount = 4,
+  })  : rowCount = level.rowCount,
+        columnCount = level.columnCount,
+        ruleCount = level.ruleCount,
+        exampleCount = level.exampleCount;
 }
 
 sealed class GenerationResult {
@@ -162,7 +173,9 @@ class GenerateWorkshopPuzzle {
   /// sinon, tirage au sort.
   EmptyCellRole _pickEmptyRole(List<Rule> combo) {
     if (combo.any(_dependsOnActiveEmptyCells)) return EmptyCellRole.active;
-    return random.nextDouble() < _activeRoleProbability ? EmptyCellRole.active : EmptyCellRole.fixed;
+    return random.nextDouble() < _activeRoleProbability
+        ? EmptyCellRole.active
+        : EmptyCellRole.fixed;
   }
 
   /// Tire une Matrice sur laquelle la combinaison de Règles a un effet visible : une
@@ -194,7 +207,8 @@ class GenerateWorkshopPuzzle {
       if (random.nextDouble() < _emptyCellProbability) {
         return Cell.empty(emptyRole);
       }
-      return Cell.filled(shapes[random.nextInt(shapes.length)], colors[random.nextInt(colors.length)]);
+      return Cell.filled(
+          shapes[random.nextInt(shapes.length)], colors[random.nextInt(colors.length)]);
     });
   }
 
@@ -221,8 +235,8 @@ class GenerateWorkshopPuzzle {
       if (!failsAnExample) continue;
 
       final candidate = rule.apply(question);
-      final sameDimensions =
-          candidate.rowCount == correctAnswer.rowCount && candidate.columnCount == correctAnswer.columnCount;
+      final sameDimensions = candidate.rowCount == correctAnswer.rowCount &&
+          candidate.columnCount == correctAnswer.columnCount;
       if (sameDimensions && candidate != correctAnswer && !candidates.contains(candidate)) {
         candidates.add(candidate);
       }
@@ -245,7 +259,8 @@ class GenerateWorkshopPuzzle {
     final column = random.nextInt(source.columnCount);
     final shapes = Shape.values.where((s) => s != Shape.empty).toList();
     final colors = catalog.colorOrder;
-    final newCell = Cell.filled(shapes[random.nextInt(shapes.length)], colors[random.nextInt(colors.length)]);
+    final newCell =
+        Cell.filled(shapes[random.nextInt(shapes.length)], colors[random.nextInt(colors.length)]);
     return source.withCell(row, column, newCell);
   }
 
