@@ -1,6 +1,5 @@
 import '../domain_services/workshop_puzzle_solver.dart';
 import '../entities/cell.dart';
-import '../entities/color.dart';
 import '../entities/empty_cell_role.dart';
 import '../entities/generation_profile.dart';
 import '../entities/matrix.dart';
@@ -190,7 +189,7 @@ class GenerateWorkshopPuzzle {
 
   Matrix _randomMatrix(int rowCount, int columnCount, EmptyCellRole emptyRole) {
     final shapes = Shape.values.where((s) => s != Shape.empty).toList();
-    final colors = Color.values;
+    final colors = catalog.colorOrder;
     return Matrix.generate(rowCount, columnCount, (r, c) {
       if (random.nextDouble() < _emptyCellProbability) {
         return Cell.empty(emptyRole);
@@ -245,7 +244,7 @@ class GenerateWorkshopPuzzle {
     final row = random.nextInt(source.rowCount);
     final column = random.nextInt(source.columnCount);
     final shapes = Shape.values.where((s) => s != Shape.empty).toList();
-    final colors = Color.values;
+    final colors = catalog.colorOrder;
     final newCell = Cell.filled(shapes[random.nextInt(shapes.length)], colors[random.nextInt(colors.length)]);
     return source.withCell(row, column, newCell);
   }

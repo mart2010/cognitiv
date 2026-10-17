@@ -111,4 +111,37 @@ void main() {
     }
     expect(generated, greaterThan(50));
   });
+
+  Set<Color> colorsUsedBy(RuleCatalog catalog) {
+    final generator = GenerateWorkshopPuzzle(catalog: catalog, random: SystemRandomSource(5));
+    final used = <Color>{};
+    for (var i = 0; i < 40; i++) {
+      final result = generator(const GenerateWorkshopPuzzleRequest(
+        rowCount: 3,
+        columnCount: 3,
+        ruleCount: 1,
+        exampleCount: 2,
+        profile: GenerationProfile.intuitiveDefaults,
+      ));
+      if (result is! GenerationSucceeded) continue;
+      for (final matrix in [result.puzzle.question, ...result.puzzle.answerChoices]) {
+        for (var r = 0; r < matrix.rowCount; r++) {
+          for (var c = 0; c < matrix.columnCount; c++) {
+            final color = matrix.cellAt(r, c).color;
+            if (color != null) used.add(color);
+          }
+        }
+      }
+    }
+    return used;
+  }
+
+  test('par défaut, seules les trois Couleurs de la palette par défaut sont utilisées', () {
+    expect(colorsUsedBy(const RuleCatalog()), {Color.blue, Color.yellow, Color.red});
+  });
+
+  test('une palette plus large augmente le nombre de Couleurs sans toucher au domaine', () {
+    final used = colorsUsedBy(const RuleCatalog(colorOrder: Color.values));
+    expect(used, containsAll([Color.green, Color.purple]));
+  });
 }

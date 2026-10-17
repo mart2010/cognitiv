@@ -6,14 +6,14 @@ import 'package:workshop/workshop.dart' as workshop;
 
 void main() {
   Widget app({int? seed}) => MaterialApp(
-        home: WorkshopPlayScreen(
-          generate: workshop.GenerateWorkshopPuzzle(
-            catalog: const workshop.RuleCatalog(),
-            random: workshop.SystemRandomSource(seed),
-          ),
-          evaluate: workshop.EvaluateWorkshopAnswer(),
-        ),
-      );
+    home: WorkshopPlayScreen(
+      generate: workshop.GenerateWorkshopPuzzle(
+        catalog: const workshop.RuleCatalog(),
+        random: workshop.SystemRandomSource(seed),
+      ),
+      evaluate: workshop.EvaluateWorkshopAnswer(),
+    ),
+  );
 
   testWidgets('affiche une énigme générée puis enchaîne sur la suivante', (tester) async {
     tester.view.physicalSize = const Size(800, 2400);

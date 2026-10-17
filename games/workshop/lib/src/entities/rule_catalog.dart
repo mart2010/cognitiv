@@ -10,11 +10,13 @@ import 'shape.dart';
 /// donnée, mais n'est pas une liste statique indépendante des dimensions — `rulesFor`
 /// l'énumère pour des dimensions précises plutôt que de le figer une fois pour toutes.
 class RuleCatalog {
+  /// Palette du jeu, dans l'ordre des Cycles de couleur ; le générateur y tire aussi les
+  /// Couleurs des Cellules. Une palette plus large augmente le nombre de Couleurs.
   final List<Color> colorOrder;
   final List<Shape> shapeOrder;
 
   const RuleCatalog({
-    this.colorOrder = Color.values,
+    this.colorOrder = Color.defaultPalette,
     this.shapeOrder = const [Shape.round, Shape.square, Shape.cross],
   });
 

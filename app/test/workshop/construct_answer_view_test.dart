@@ -115,4 +115,28 @@ void main() {
 
     expect(result, isTrue);
   });
+
+  testWidgets('retoucher une case avec le même pinceau la vide', (tester) async {
+    bool? result;
+    await _pump(tester, onAnswered: (v) => result = v);
+
+    await _select(tester, 'square', 'red');
+    await _tapCell(tester, 0, 0);
+    await _tapCell(tester, 0, 0);
+    await _select(tester, 'square', 'red');
+    await _tapCell(tester, 0, 0);
+    await _select(tester, 'round', 'red');
+    await _tapCell(tester, 0, 1);
+    await tester.tap(find.byKey(const Key('submit-construction')));
+    await tester.pump();
+
+    expect(result, isTrue);
+  });
+
+  testWidgets('pas de pinceau vide, et le bouton dit « Valider la réponse »', (tester) async {
+    await _pump(tester);
+    expect(find.byKey(const Key('brush-shape-empty')), findsNothing);
+    expect(find.text('Valider la réponse'), findsOneWidget);
+    expect(find.text('Effacer tout'), findsOneWidget);
+  });
 }

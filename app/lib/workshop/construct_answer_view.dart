@@ -37,26 +37,27 @@ class _ConstructAnswerViewState extends State<ConstructAnswerView> {
     workshop.Shape.round,
     workshop.Shape.square,
     workshop.Shape.cross,
-    workshop.Shape.empty,
   ];
 
   late int _rows = widget.rowCount;
   late int _columns = widget.columnCount;
   late workshop.Matrix _grid = _blankGrid();
   var _brushShape = workshop.Shape.round;
-  var _brushColor = workshop.Color.values.first;
+  var _brushColor = workshop.Color.defaultPalette.first;
 
   workshop.Matrix _blankGrid() =>
       workshop.Matrix.generate(_rows, _columns, (_, _) => workshop.Cell.empty(widget.emptyRole));
 
-  workshop.Cell get _brush => _brushShape == workshop.Shape.empty
-      ? workshop.Cell.empty(widget.emptyRole)
-      : workshop.Cell.filled(_brushShape, _brushColor);
+  workshop.Cell get _brush => workshop.Cell.filled(_brushShape, _brushColor);
 
+  /// Toucher une case la peint avec le pinceau ; la retoucher avec le même pinceau la
+  /// vide. Pas de pinceau « vide » : une case qui doit rester vide, on ne la remplit pas.
   void _paintCell(int row, int column) {
     if (!widget.enabled) return;
     widget.sounds.tap();
-    setState(() => _grid = _grid.withCell(row, column, _brush));
+    final isSameAsBrush = _grid.cellAt(row, column) == _brush;
+    final next = isSameAsBrush ? workshop.Cell.empty(widget.emptyRole) : _brush;
+    setState(() => _grid = _grid.withCell(row, column, next));
   }
 
   /// Permuter lignes et colonnes : certaines Règles (Transposition) changent les
@@ -69,63 +70,82 @@ class _ConstructAnswerViewState extends State<ConstructAnswerView> {
     _grid = _blankGrid();
   });
 
+  /// Grille à gauche, pinceau (formes puis couleurs) à droite, actions dessous : compact,
+  /// pour que l'Énigme tienne à l'écran sans défilement.
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            border: Border.all(color: scheme.outlineVariant),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: MatrixView(
-            key: const Key('construct-grid'),
-            matrix: _grid,
-            cellSize: 44,
-            onCellTap: widget.enabled ? _paintCell : null,
-          ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                border: Border.all(color: scheme.outlineVariant),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: MatrixView(
+                key: const Key('construct-grid'),
+                matrix: _grid,
+                cellSize: 44,
+                onCellTap: widget.enabled ? _paintCell : null,
+              ),
+            ),
+            if (widget.enabled) ...[
+              const SizedBox(width: 16),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      for (final shape in _paintableShapes) ...[
+                        if (shape != _paintableShapes.first) const SizedBox(width: 8),
+                        _shapeButton(scheme, shape),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      for (final color in workshop.Color.defaultPalette) _colorButton(scheme, color),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ],
         ),
         if (widget.enabled) ...[
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           Wrap(
             alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
             spacing: 8,
-            children: [for (final shape in _paintableShapes) _shapeButton(scheme, shape)],
-          ),
-          const SizedBox(height: 8),
-          Opacity(
-            opacity: _brushShape == workshop.Shape.empty ? 0.3 : 1,
-            child: Wrap(
-              alignment: WrapAlignment.center,
-              spacing: 8,
-              children: [for (final color in workshop.Color.values) _colorButton(scheme, color)],
-            ),
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            alignment: WrapAlignment.center,
-            spacing: 8,
+            runSpacing: 4,
             children: [
               if (widget.rowCount != widget.columnCount)
-                TextButton.icon(
+                TextButton(
                   key: const Key('swap-dimensions'),
                   onPressed: _swapDimensions,
-                  icon: const Icon(Icons.screen_rotation_alt),
-                  label: Text('$_rows × $_columns'),
+                  child: Text('Permuter $_rows × $_columns'),
                 ),
               TextButton(
                 key: const Key('clear-grid'),
                 onPressed: () => setState(() => _grid = _blankGrid()),
-                child: const Text('Tout vider'),
+                child: const Text('Effacer tout'),
+              ),
+              FilledButton(
+                key: const Key('submit-construction'),
+                onPressed: () => widget.onSubmit(_grid),
+                child: const Text('Valider la réponse'),
               ),
             ],
-          ),
-          FilledButton(
-            key: const Key('submit-construction'),
-            onPressed: () => widget.onSubmit(_grid),
-            child: const Text('Valider'),
           ),
         ],
       ],
@@ -134,27 +154,24 @@ class _ConstructAnswerViewState extends State<ConstructAnswerView> {
 
   Widget _shapeButton(ColorScheme scheme, workshop.Shape shape) {
     final selected = _brushShape == shape;
-    final preview = shape == workshop.Shape.empty
-        ? workshop.Cell.empty(widget.emptyRole)
-        : workshop.Cell.filled(shape, _brushColor);
     return InkWell(
       key: Key('brush-shape-${shape.name}'),
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(10),
       onTap: () => setState(() => _brushShape = shape),
       child: Container(
-        padding: const EdgeInsets.all(6),
+        padding: const EdgeInsets.all(5),
         decoration: BoxDecoration(
           border: Border.all(
             color: selected ? scheme.primary : scheme.outlineVariant,
-            width: selected ? 3 : 1,
+            width: selected ? 2.5 : 1,
           ),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(10),
         ),
         child: MatrixView(
           matrix: workshop.Matrix([
-            [preview],
+            [workshop.Cell.filled(shape, _brushColor)],
           ]),
-          cellSize: 36,
+          cellSize: 34,
         ),
       ),
     );
@@ -165,15 +182,10 @@ class _ConstructAnswerViewState extends State<ConstructAnswerView> {
     return InkWell(
       key: Key('brush-color-${color.name}'),
       customBorder: const CircleBorder(),
-      onTap: () => setState(() {
-        _brushColor = color;
-        if (_brushShape == workshop.Shape.empty) {
-          _brushShape = workshop.Shape.round;
-        }
-      }),
+      onTap: () => setState(() => _brushColor = color),
       child: Container(
-        width: 36,
-        height: 36,
+        width: 30,
+        height: 30,
         decoration: BoxDecoration(
           color: flutterColorOf(color),
           shape: BoxShape.circle,
