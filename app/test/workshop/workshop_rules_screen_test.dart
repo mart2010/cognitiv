@@ -104,4 +104,25 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(WorkshopRulesScreen), findsOneWidget);
   });
+
+  group('exemple avant / après', () {
+    test('chaque Famille a un exemple qui change bien la grille', () {
+      for (final family in workshop.RuleFamily.values) {
+        final after = familyPreviewAfter(family);
+        expect(after, isNotNull, reason: family.name);
+        expect(after, isNot(previewSample), reason: family.name);
+      }
+    });
+
+    test('la Conditionnelle transforme toutes les cases d’une même couleur', () {
+      final after = familyPreviewAfter(workshop.RuleFamily.conditional)!;
+      var changed = 0;
+      for (var r = 0; r < 3; r++) {
+        for (var c = 0; c < 3; c++) {
+          if (after.cellAt(r, c) != previewSample.cellAt(r, c)) changed++;
+        }
+      }
+      expect(changed, greaterThanOrEqualTo(3));
+    });
+  });
 }

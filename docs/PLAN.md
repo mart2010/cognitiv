@@ -70,6 +70,14 @@ Documents de référence : `BRIEF.md` (problème, périmètre, contraintes), `IN
     - [~] Habillage visuel/sonore et célébration du succès. Premier jet fait (2026-10-17) : thème sobre clair/sombre (`lib/theme/app_theme.dart`, fond chaud, cartes douces), sections en cartes, sons synthétisés par `app/tool/generate_sounds.py` (clic discret, erreur douce, fanfare de réussite) joués via un port `GameSounds` (`lib/audio/`, implémentation `audioplayers`, doublure silencieuse en test, ADR 0005), célébration par confettis plein écran + bandeau « Bravo ! » en grand + retour haptique fort ; l'échec reste discret. Retour du premier test sur le Pixel 8a (2026-10-17) : l'écran doit tenir sans défilement vertical, libellés des sections écrits à la verticale à gauche des puzzles (« Exemples », « Cas à résoudre », « Réponse ») — fait : `PuzzleView` tient en une page (FittedBox en secours, jamais de scroll), barre du bas fixe (indice, résultat, « Suivant »), pinceau de la construction libre à droite de la grille. Ajustements du 2026-10-17 après le test : section « Cas à résoudre » renommée « Énigme » ; construction libre réorganisée (grille à gauche, formes puis couleurs à droite, « Effacer tout » et « Valider la réponse » dessous, libellé de section retiré dans ce mode) ; pinceau « vide » supprimé (retoucher une case avec le même pinceau la vide). À juger (son, rythme des confettis, palette de couleurs, choix des pinceaux) ; sons de synthèse à remplacer si le rendu est trop « bip ».
     - [ ] Pas encore lancé sur le Pixel 8a : sous Windows, le build Android échoue derrière le proxy d'entreprise (Zscaler, Gradle ignore `HTTP_PROXY`). À reprendre depuis le portable Ubuntu (`flutter run` sur le Pixel, débogage USB déjà autorisé sur Windows seulement).
 
+## Défi de conception : cacher les règles tout en les rendant personnalisables
+
+Constaté le 2026-10-17 en essayant l'écran des règles : lister toutes les Familles avec leur nom, leur description et un exemple avant / après **enlève le côté mystère et énigmatique** du jeu (deviner la règle est le cœur de L'atelier). Cet écran est donc un premier jet fonctionnel, pas la forme finale.
+- Ne pas présenter tout le catalogue d'un coup sans avoir averti le joueur que cela dévoile toutes les possibilités (écran d'avertissement, ou accès explicitement présenté comme « révéler les règles »).
+- Trouver comment garder une part de personnalisation (quelles Familles peuvent apparaître) sans tout montrer : pistes à explorer — révélation progressive (une Famille se montre quand on la rencontre ou la devine), noms et indices volontairement évocateurs plutôt que descriptifs, réglages plus grossiers (« simple » / « avancé ») au lieu d'une liste complète, Familles regroupées par difficulté ressentie, mode « surprise » qui masque la liste.
+- Va de pair avec le travail sur les indices et les noms de règles : le bouton d'indice révèle aujourd'hui la Famille par son nom technique (`mirror`, `packing`…), à reprendre aussi (noms affichés, niveaux d'indice progressifs).
+- C'est vu comme le défi central de ce jeu : à traiter avec une session de conception (`/grill`) avant de figer l'écran.
+
 ## À décider avant le prototype
 
 - [x] Choix du jeu de comparaison : **Tango-like** (Takuzu/Binairo), retenu. Utiliser les noms génériques du genre dans nos documents, pas les marques.
@@ -80,6 +88,7 @@ Documents de référence : `BRIEF.md` (problème, périmètre, contraintes), `IN
 - [x] Reporter le vocabulaire stabilisé dans `games/workshop/CONTEXT.md` : catalogue de règles enrichi (rotation 180°, décalage cyclique, anti-diagonale), et concept de filtre de règles nommé **Profil de génération** (voir `games/workshop/CONTEXT.md` et ADR 0008).
 - [x] Mode(s) de réponse : les deux modes seront implémentés (choix multiple et construction libre) — voir décision ci-dessus.
 
+- [ ] Concevoir la présentation des règles (voir « Défi de conception » ci-dessus) : dévoiler sans tuer le mystère, indices progressifs, personnalisation.
 - [ ] Références et repoussoirs d'ambiance (jeux, design, univers sonore) — Samewise retenu comme référence positive (voir décision ci-dessus) ; compléter avec d'autres références au besoin.
 - [ ] Tablette Android disponible pour tester ? (le jalon vise téléphone et tablette).
 

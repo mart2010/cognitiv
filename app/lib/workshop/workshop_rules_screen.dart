@@ -168,51 +168,76 @@ class _FamilyTile extends StatelessWidget {
   }
 }
 
-/// Exemple avant / après d'une Famille, sur une grille d'exemple commune : la première
-/// Règle de la Famille qui change vraiment cette grille.
+/// Grille d'exemple commune à toutes les Familles. Les couleurs sont regroupées de façon
+/// que les Règles de couleur et conditionnelles aient un effet bien visible.
+@visibleForTesting
+final workshop.Matrix previewSample = workshop.Matrix([
+  [
+    workshop.Cell.filled(workshop.Shape.round, workshop.Color.blue),
+    workshop.Cell.filled(workshop.Shape.square, workshop.Color.yellow),
+    workshop.Cell.filled(workshop.Shape.cross, workshop.Color.red),
+  ],
+  [
+    workshop.Cell.filled(workshop.Shape.square, workshop.Color.red),
+    workshop.Cell.empty(workshop.EmptyCellRole.active),
+    workshop.Cell.filled(workshop.Shape.round, workshop.Color.blue),
+  ],
+  [
+    workshop.Cell.filled(workshop.Shape.cross, workshop.Color.yellow),
+    workshop.Cell.filled(workshop.Shape.round, workshop.Color.red),
+    workshop.Cell.filled(workshop.Shape.square, workshop.Color.blue),
+  ],
+]);
+
+int _changedCells(workshop.Matrix before, workshop.Matrix after) {
+  if (before.rowCount != after.rowCount || before.columnCount != after.columnCount) {
+    return before.rowCount * before.columnCount;
+  }
+  var count = 0;
+  for (var r = 0; r < before.rowCount; r++) {
+    for (var c = 0; c < before.columnCount; c++) {
+      if (before.cellAt(r, c) != after.cellAt(r, c)) count++;
+    }
+  }
+  return count;
+}
+
+/// Résultat de la Règle de la Famille qui change le plus de cases de `previewSample`
+/// (la première en cas d'égalité), ou null si aucune ne la change.
+@visibleForTesting
+workshop.Matrix? familyPreviewAfter(workshop.RuleFamily family) {
+  final rules = const workshop.RuleCatalog().rulesInFamilies(
+    {family},
+    rowCount: previewSample.rowCount,
+    columnCount: previewSample.columnCount,
+  );
+  workshop.Matrix? best;
+  var bestCount = 0;
+  for (final rule in rules) {
+    final result = rule.apply(previewSample);
+    final count = _changedCells(previewSample, result);
+    if (count > bestCount) {
+      best = result;
+      bestCount = count;
+    }
+  }
+  return best;
+}
+
+/// Exemple avant / après d'une Famille sur la grille d'exemple commune, avec la Règle de la
+/// Famille qui change le plus de cases pour que son effet se voie.
 class _FamilyPreview extends StatelessWidget {
   final workshop.RuleFamily family;
 
   const _FamilyPreview({required this.family});
 
-  static final workshop.Matrix sample = workshop.Matrix([
-    [
-      workshop.Cell.filled(workshop.Shape.round, workshop.Color.blue),
-      workshop.Cell.filled(workshop.Shape.square, workshop.Color.yellow),
-      workshop.Cell.filled(workshop.Shape.cross, workshop.Color.red),
-    ],
-    [
-      workshop.Cell.filled(workshop.Shape.square, workshop.Color.red),
-      workshop.Cell.empty(workshop.EmptyCellRole.active),
-      workshop.Cell.filled(workshop.Shape.round, workshop.Color.blue),
-    ],
-    [
-      workshop.Cell.filled(workshop.Shape.cross, workshop.Color.yellow),
-      workshop.Cell.filled(workshop.Shape.round, workshop.Color.red),
-      workshop.Cell.filled(workshop.Shape.square, workshop.Color.blue),
-    ],
-  ]);
-
-  workshop.Matrix? _after() {
-    final rules = const workshop.RuleCatalog().rulesInFamilies(
-      {family},
-      rowCount: sample.rowCount,
-      columnCount: sample.columnCount,
-    );
-    for (final rule in rules) {
-      final result = rule.apply(sample);
-      if (result != sample) return result;
-    }
-    return null;
-  }
-
   @override
   Widget build(BuildContext context) {
-    final after = _after();
+    final after = familyPreviewAfter(family);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        MatrixView(matrix: sample, cellSize: 16),
+        MatrixView(matrix: previewSample, cellSize: 16),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4),
           child: Icon(Icons.arrow_forward, size: 14, color: Theme.of(context).colorScheme.outline),

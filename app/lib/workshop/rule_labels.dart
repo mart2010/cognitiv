@@ -18,7 +18,7 @@ RuleFamilyLabel labelOf(workshop.RuleFamily family) => switch (family) {
   ),
   workshop.RuleFamily.rotation => const RuleFamilyLabel(
     'Rotation',
-    'La grille tourne d’un quart de tour ou d’un demi-tour. Les formes ne tournent pas.',
+    'La grille tourne d’un quart de tour ou d’un demi-tour.',
   ),
   workshop.RuleFamily.transposition => const RuleFamilyLabel(
     'Transposition',
@@ -48,7 +48,7 @@ RuleFamilyLabel labelOf(workshop.RuleFamily family) => switch (family) {
   ),
   workshop.RuleFamily.conditional => const RuleFamilyLabel(
     'Conditionnelle',
-    'Les cases d’une certaine couleur changent de forme.',
+    'Toutes les cases d’une même couleur prennent la même forme.',
     advanced: true,
   ),
 };
