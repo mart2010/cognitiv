@@ -1,6 +1,6 @@
 # Le cartographe
 
-Jeu de mémoire et d'apprentissage de connaissances : le joueur étudie des Éléments d'un Savoir sous contrainte de temps, est distrait, puis les rappelle. Le premier Savoir est la géographie. Nom retenu le 2026-10-18 (« The Cartographer » en anglais) : le joueur redessine le monde de mémoire, et le nom rappelle L'atelier. Le nom de code reste `recall` (ADR 0007). Utilise les termes énigme, partie, niveau et score de la plateforme, plus Savoir, Élément et Pack de contenu. Le jeu n'évalue pas le joueur : c'est lui qui choisit son Niveau, comme dans L'atelier.
+Jeu de mémoire et d'apprentissage de connaissances : le joueur étudie des Éléments d'un Savoir sous contrainte de temps, est distrait, puis les rappelle. Le premier Savoir est la géographie. Nom retenu le 2026-10-18 (« The Cartographer » en anglais) : le joueur redessine le monde de mémoire, et le nom rappelle L'atelier. Nom de code : `cartographer` (ADR 0007). Utilise les termes énigme, partie, niveau et score de la plateforme, plus Savoir, Élément et Pack de contenu. Le jeu n'évalue pas le joueur : c'est lui qui choisit son Niveau, comme dans L'atelier.
 
 ## Language
 
@@ -11,7 +11,7 @@ Une unité à apprendre dans un Savoir (un pays, une ville, un fleuve). Il porte
 _Code_: `Item`
 
 **Facette**:
-Une manière de connaître un Élément. Cinq types : Attribut (nom, capitale), Position (emplacement sur la carte), Forme (contour), Grandeur (valeur approximative : population, altitude), Relation (voisinage avec d'autres Éléments). Savoir nommer un pays d'après sa forme n'est pas savoir sa capitale : chaque Facette s'apprend séparément.
+Une manière de connaître un Élément. Cinq types : Attribut (nom, capitale), Position (emplacement sur la carte), Forme (apparence visuelle : contour, drapeau), Grandeur (valeur approximative : population, altitude), Relation (voisinage avec d'autres Éléments). Savoir nommer un pays d'après sa forme n'est pas savoir sa capitale : chaque Facette s'apprend séparément.
 _Avoid_: Propriété, champ
 _Code_: `Facet`
 
@@ -71,6 +71,28 @@ _Code_: `Scene`
 **Relation**:
 Une Facette qui lie des Éléments entre eux, de trois natures : voisinage (symétrique), inclusion (hiérarchique : continent ⊃ pays), flux (orienté : circulation du sang, cours d'un fleuve).
 _Code_: `Relation`
+
+**Capitale**:
+Une Facette d'un pays. Principale (une Bolivie en a deux, La Paz et Sucre) ou alternative (Valparaíso pour le Chili). En Nommage, toutes sont acceptées comme réponse.
+_Code_: `Capital`, `CapitalRole`
+
+**Drapeau**:
+La Facette visuelle d'un pays, ajoutée sur demande du joueur (2026-10-18) : posable comme Indice ou comme Réponse seulement pour les Éléments qui en ont un. Les données n'en portent pas encore ; le domaine les attend dans un champ optionnel de la Carte de base.
+_Code_: `Facet.flag`
+
+**Profil**:
+Les genres de Lien que le joueur accepte qu'on lui pose (ex. placer les pays, nommer les capitales). Un seul par couple joueur/jeu, partagé par tous les Niveaux ; stocké par la plateforme comme donnée opaque (patron de l'ADR 0008). Le jeu ne l'évalue pas, c'est le joueur qui choisit ce qu'il travaille.
+_Avoid_: Réglages, filtre
+_Code_: `CartographerProfile`
+
+**Verdict**:
+Le résultat d'une réponse : exact (1 point), proche (la moitié, seulement pour Placer : le point est tout près de l'Élément sans être dedans) ou faux. Pas de bonus de vitesse.
+_Avoid_: Note, réussite
+_Code_: `AnswerVerdict`
+
+**Tolérance de saisie**:
+Ce que Nommer accepte comme correct : casse, accents et ponctuation ignorés, une faute de frappe pour un mot de 5 lettres ou plus, deux dès 9, aucune sous 5. Les noms des deux langues sont acceptés. Un texte qui est exactement le nom d'un autre Élément n'est jamais toléré comme faute (« Guyane » n'est pas « Guyana »).
+_Code_: `TextMatcher`
 
 **Réseau de traversée**:
 L'ensemble des Éléments traversables et de leurs adjacences pour une Énigme de chemin (ex. terre seulement, terre et mers, métropole seulement). Annoncé au joueur : le même couple de points donne des réponses différentes selon le Réseau (France–Brésil : une frontière par la Guyane, ou plus si les territoires hors métropole sont exclus). La Réponse est le nombre d'Éléments traversés, départ et arrivée exclus.

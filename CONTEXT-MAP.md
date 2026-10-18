@@ -4,7 +4,7 @@
 
 - [Plateforme](./platform/CONTEXT.md): catalogue, profil local, progression, parties et scores stockés
 - [L'atelier (`workshop`)](./games/workshop/CONTEXT.md): jeu de règle cachée (règles, catalogue, énigmes justes)
-- [Le cartographe (`recall`)](./games/recall/CONTEXT.md): jeu de mémoire et d'apprentissage de connaissances (Savoirs, Éléments, Scènes)
+- [Le cartographe (`cartographer`)](./games/cartographer/CONTEXT.md): jeu de mémoire et d'apprentissage de connaissances (Savoirs, Éléments, Scènes)
 - [Grille (`grid`)](./games/grid/CONTEXT.md): jeu de déduction sur grille à solution unique (Tango-like), jeu de comparaison
 
 Un contexte est ajouté par jeu, quand ses premiers termes sont réglés.

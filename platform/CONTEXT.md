@@ -6,7 +6,7 @@ Le socle de l'app : catalogue, profil local, progression, parties et scores stoc
 
 Chaque terme porte un nom de code anglais (`_Code_`), utilisé dans le code, les noms de paquets et les clés de données stockées. Les textes affichés au joueur passent par la traduction FR/EN. Attention : la `Session` du code est la **séance** ; l'ancien mot français « session » reste écarté.
 
-**Noms de code des jeux** : L'atelier = `workshop`, Le cartographe (remplace La vitrine) = `recall`, Grille = `grid`, Lucioles = `fireflies`.
+**Noms de code des jeux** : L'atelier = `workshop`, Le cartographe (remplace La vitrine) = `cartographer`, Grille = `grid`, Lucioles = `fireflies`.
 
 **Plateforme**:
 Le socle commun qui accueille les jeux : écran d'accueil, catalogue, progression et données du joueur.

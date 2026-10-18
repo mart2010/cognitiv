@@ -1,0 +1,61 @@
+import 'recall_aid.dart';
+
+/// Niveau du Cartographe : un réglage de difficulté fixé par le jeu (`platform/CONTEXT.md`).
+/// Il règle le nombre d'Éléments étudiés, la durée d'étude, la durée de Distraction et
+/// l'Aide au rappel. Le joueur choisit librement son Niveau, il n'y a pas de verrou ; la
+/// difficulté ne s'adapte jamais en secret.
+class CartographerLevel {
+  /// De 1 (le plus facile) à `CartographerLevels.all.length`.
+  final int number;
+  final int itemCount;
+  final int studySeconds;
+  final int distractionSeconds;
+  final RecallAid aid;
+
+  /// Nombre d'Études-éclair d'une Partie à ce Niveau.
+  final int studyCount;
+
+  /// Nombre de questions du Bilan de fin de Partie.
+  final int delayedRecallCount;
+
+  const CartographerLevel({
+    required this.number,
+    required this.itemCount,
+    required this.studySeconds,
+    required this.distractionSeconds,
+    required this.aid,
+    this.studyCount = 3,
+    this.delayedRecallCount = 5,
+  });
+
+  /// Les points croissent avec le Niveau, comme dans L'atelier.
+  int get pointsPerQuestion => 10 * number;
+}
+
+/// Échelle des Niveaux, du plus facile au plus difficile. Provisoire : les chiffres se
+/// règlent au playtest.
+abstract final class CartographerLevels {
+  static const all = [
+    CartographerLevel(number: 1, itemCount: 3, studySeconds: 12, distractionSeconds: 3, aid: RecallAid.choices),
+    CartographerLevel(number: 2, itemCount: 4, studySeconds: 12, distractionSeconds: 3, aid: RecallAid.choices),
+    CartographerLevel(number: 3, itemCount: 4, studySeconds: 10, distractionSeconds: 5, aid: RecallAid.choices),
+    CartographerLevel(number: 4, itemCount: 5, studySeconds: 10, distractionSeconds: 5, aid: RecallAid.firstLetter),
+    CartographerLevel(number: 5, itemCount: 5, studySeconds: 8, distractionSeconds: 6, aid: RecallAid.firstLetter),
+    CartographerLevel(number: 6, itemCount: 6, studySeconds: 8, distractionSeconds: 6, aid: RecallAid.firstLetter),
+    CartographerLevel(number: 7, itemCount: 6, studySeconds: 6, distractionSeconds: 8, aid: RecallAid.free),
+    CartographerLevel(number: 8, itemCount: 7, studySeconds: 6, distractionSeconds: 8, aid: RecallAid.free),
+    CartographerLevel(number: 9, itemCount: 8, studySeconds: 5, distractionSeconds: 10, aid: RecallAid.free),
+    CartographerLevel(number: 10, itemCount: 8, studySeconds: 4, distractionSeconds: 10, aid: RecallAid.free),
+  ];
+
+  static CartographerLevel get first => all.first;
+  static CartographerLevel get last => all.last;
+
+  static CartographerLevel byNumber(int number) => all.firstWhere(
+        (level) => level.number == number,
+        orElse: () => throw ArgumentError('Niveau inconnu : $number'),
+      );
+
+  static bool hasNext(CartographerLevel level) => level.number < last.number;
+  static bool hasPrevious(CartographerLevel level) => level.number > first.number;
+}

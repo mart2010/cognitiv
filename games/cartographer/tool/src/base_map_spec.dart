@@ -10,7 +10,7 @@ class Frame {
   bool contains(double lon, double lat) => lon >= west && lon <= east && lat >= south && lat <= north;
 }
 
-/// Description d'une Carte de base à extraire de Natural Earth (`games/recall/CONTEXT.md`).
+/// Description d'une Carte de base à extraire de Natural Earth (`games/cartographer/CONTEXT.md`).
 class BaseMapSpec {
   final String id;
 

@@ -1,4 +1,4 @@
-name: recall
+name: cartographer
 description: Domaine et outils de données du jeu Le cartographe (mémoire et apprentissage de connaissances) pour Cognitiv.
 publish_to: none
 environment:
