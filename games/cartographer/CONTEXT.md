@@ -1,6 +1,6 @@
 # Le cartographe
 
-Jeu de mémoire et d'apprentissage de connaissances : le joueur étudie des Éléments d'un Savoir sous contrainte de temps, est distrait, puis les rappelle. Le premier Savoir est la géographie. Nom retenu le 2026-10-18 (« The Cartographer » en anglais) : le joueur redessine le monde de mémoire, et le nom rappelle L'atelier. Nom de code : `cartographer` (ADR 0007). Utilise les termes énigme, partie, niveau et score de la plateforme, plus Savoir, Élément et Pack de contenu. Le jeu n'évalue pas le joueur : c'est lui qui choisit son Niveau, comme dans L'atelier.
+Jeu de mémoire et d'apprentissage de connaissances : le joueur étudie des Éléments d'un Savoir sous contrainte de temps, est distrait, puis les rappelle. Le premier Savoir est la géographie. Nom retenu le 2026-10-18 (« The Cartographer » en anglais) : le joueur redessine le monde de mémoire, et le nom rappelle L'atelier. Nom de code : `cartographer` (ADR 0007). Utilise les termes énigme, partie, niveau et score de la plateforme, plus Savoir, Élément et Pack de contenu. Le jeu ne change jamais le Niveau : le joueur le choisit, comme dans L'atelier. Il retient en revanche ce que le joueur connaît (Maîtrise) pour choisir quoi faire étudier, et le dit à l'écran.
 
 ## Language
 
@@ -94,6 +94,20 @@ _Code_: `AnswerVerdict`
 Ce que Nommer accepte comme correct : casse, accents et ponctuation ignorés, une faute de frappe pour un mot de 5 lettres ou plus, deux dès 9, aucune sous 5. Les noms des deux langues sont acceptés. Un texte qui est exactement le nom d'un autre Élément n'est jamais toléré comme faute (« Guyane » n'est pas « Guyana »).
 _Code_: `TextMatcher`
 
-**Réseau de traversée**:
+**Repérage**:
+La première manche d'une Partie : une question par Élément de la Région (ou un échantillon des moins connus), qui sert à choisir quoi étudier. Présentée comme une manche de jeu, pas comme un examen : elle rapporte des points comme les autres, sans commentaire sur ce que le joueur ne sait pas. Seul « exact » compte comme connu ; un placement « presque » est un raté.
+_Avoid_: Test, diagnostic, évaluation
+_Code_: `Screening`
+
+**Lot d'étude**:
+Les Éléments non connus d'une Étude-éclair, au plus `itemCount` du Niveau (4 au Niveau 3). S'il reste des ratés, une nouvelle Étude suit, jusqu'à 2 cycles par Partie ; le reste est laissé de côté.
+_Code_: `StudyBatch`
+
+**Maîtrise**:
+Ce que le jeu sait d'un joueur, Lien par Lien, d'une Partie à l'autre. Sert à choisir quoi poser (repérage, Lot d'étude) et à suggérer un autre genre de Lien quand tout est connu, jamais à changer le Niveau ni à imposer. Un « connu » stocké vieillit : le jeu en recontrôle quelques-uns à chaque Partie. États exacts à trancher. Stockée par la plateforme comme donnée opaque (ADR 0009).
+_Avoid_: Score (un Score est celui d'une Partie), XP, niveau du joueur
+_Code_: `Mastery`
+
+**Région**:
 L'ensemble des Éléments traversables et de leurs adjacences pour une Énigme de chemin (ex. terre seulement, terre et mers, métropole seulement). Annoncé au joueur : le même couple de points donne des réponses différentes selon le Réseau (France–Brésil : une frontière par la Guyane, ou plus si les territoires hors métropole sont exclus). La Réponse est le nombre d'Éléments traversés, départ et arrivée exclus.
 _Code_: `CrossingNetwork`

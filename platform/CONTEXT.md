@@ -25,7 +25,7 @@ _Code_: `Puzzle`
 Une manche de séance est une énigme courte, sans terme à part.
 
 **Partie**:
-Un enchaînement d'énigmes propre à un jeu et à un niveau, qui produit un score. Elle se termine après un nombre fixe d'énigmes, ou, pour une séance, à la durée cible. Elle peut être mise en pause à tout moment (app en arrière-plan ou fermée) et reprise ensuite. Elle est en cours, en pause, terminée ou abandonnée. Un jeu n'a qu'une partie en cours ou en pause à la fois. Ses énigmes sont générées et stockées dès son début. À la reprise, une énigme sensible au temps repart de son début, et le temps de pause ne compte jamais.
+Un enchaînement d'énigmes propre à un jeu et à un niveau, qui produit un score. Elle se termine après un nombre fixe d'énigmes, pour une séance à la durée cible, ou quand le jeu la déclare terminée (ses énigmes suivantes dépendent alors des réponses précédentes, ADR 0010). Elle peut être mise en pause à tout moment (app en arrière-plan ou fermée) et reprise ensuite. Elle est en cours, en pause, terminée ou abandonnée. Un jeu n'a qu'une partie en cours ou en pause à la fois. Ses énigmes sont générées et stockées dès son début. À la reprise, une énigme sensible au temps repart de son début, et le temps de pause ne compte jamais.
 _Avoid_: Session, round
 _Code_: `Run`
 
@@ -35,7 +35,7 @@ _Avoid_: Échec, forfait
 _Code_: `Abandon`
 
 **Niveau**:
-Un réglage de difficulté défini par un jeu (ex. nombre de règles combinées et d'exemples). Aucun niveau n'est verrouillé : le joueur choisit librement de monter ou de descendre, et le jeu peut seulement lui suggérer le niveau suivant après une partie (verdict « niveau franchi »). La difficulté ne s'adapte pas en secret pendant la partie. Le score d'un jeu peut tenir compte du niveau (une bonne réponse vaut plus à un niveau difficile).
+Un réglage de difficulté défini par un jeu (ex. nombre de règles combinées et d'exemples). Aucun niveau n'est verrouillé : le joueur choisit librement de monter ou de descendre, et le jeu peut seulement lui suggérer le niveau suivant après une partie (verdict « niveau franchi »). La difficulté ne s'adapte pas en secret pendant la partie : seul le choix du contenu peut s'adapter, de façon visible (ex. quels Éléments étudier, ADR 0009). Le score d'un jeu peut tenir compte du niveau (une bonne réponse vaut plus à un niveau difficile).
 _Avoid_: Palier, étape, difficulté adaptative
 _Code_: `Level`
 
@@ -43,6 +43,11 @@ _Code_: `Level`
 Les données qu'un jeu fournit pour décrire où en est une énigme en cours (ex. exemples déjà révélés). La plateforme les stocke sans les lire et les rend au jeu à la reprise.
 _Avoid_: Sauvegarde, snapshot
 _Code_: `ResumeState`
+
+**État d'apprentissage**:
+La donnée qu'un jeu de connaissances décrit pour savoir ce que le joueur connaît d'une Partie à l'autre. La plateforme la stocke par joueur et par jeu, dans le Profil local, sans la lire ; le jeu la met à jour après chaque Partie (ADR 0009). Réinitialisable par le joueur.
+_Avoid_: Progression (dérivée de faits que la plateforme connaît), sauvegarde
+_Code_: `LearningState`
 
 **Niveau franchi**:
 Verdict renvoyé par le jeu à la fin d'une partie, selon ses propres seuils. La plateforme s'en sert pour débloquer le niveau suivant, sans interpréter le score.
