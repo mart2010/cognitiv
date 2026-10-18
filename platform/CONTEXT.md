@@ -6,7 +6,7 @@ Le socle de l'app : catalogue, profil local, progression, parties et scores stoc
 
 Chaque terme porte un nom de code anglais (`_Code_`), utilisé dans le code, les noms de paquets et les clés de données stockées. Les textes affichés au joueur passent par la traduction FR/EN. Attention : la `Session` du code est la **séance** ; l'ancien mot français « session » reste écarté.
 
-**Noms de code des jeux** : L'atelier = `workshop`, La vitrine = `showcase`, Grille = `grid`, Lucioles = `fireflies`.
+**Noms de code des jeux** : L'atelier = `workshop`, Rappel (nom de travail, remplace La vitrine) = `recall`, Grille = `grid`, Lucioles = `fireflies`.
 
 **Plateforme**:
 Le socle commun qui accueille les jeux : écran d'accueil, catalogue, progression et données du joueur.
@@ -43,6 +43,11 @@ _Code_: `Level`
 Les données qu'un jeu fournit pour décrire où en est une énigme en cours (ex. exemples déjà révélés). La plateforme les stocke sans les lire et les rend au jeu à la reprise.
 _Avoid_: Sauvegarde, snapshot
 _Code_: `ResumeState`
+
+**État d'apprentissage**:
+La donnée qu'un jeu d'apprentissage décrit pour savoir ce que le joueur maîtrise d'une Partie à l'autre (la Maîtrise, côté jeu). La plateforme la stocke par joueur et par jeu sans la lire ; le jeu la met à jour après chaque Partie (ADR 0009).
+_Avoid_: Progression (dérivée de faits que la plateforme connaît), sauvegarde
+_Code_: `LearningState`
 
 **Niveau franchi**:
 Verdict renvoyé par le jeu à la fin d'une partie, selon ses propres seuils. La plateforme s'en sert pour débloquer le niveau suivant, sans interpréter le score.
