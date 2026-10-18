@@ -74,8 +74,18 @@ Un ensemble de jeux proposé ensemble au catalogue, gratuit ou payant.
 _Avoid_: Pack, collection
 _Code_: `Bundle`
 
+**Savoir**:
+Un champ de connaissance appris par certains jeux (géographie, ciel, anatomie, botanique…). À ne pas confondre avec le domaine cognitif, qui classe un jeu (mémoire de travail, raisonnement…).
+_Avoid_: Domaine (déjà pris par le domaine cognitif), thème
+_Code_: `Subject`
+
+**Élément**:
+Une unité à apprendre dans un Savoir (un pays, une étoile, un os, une plante).
+_Avoid_: Carte, fiche, item
+_Code_: `Item`
+
 **Pack de contenu**:
-Un ensemble d'énigmes écrites à la main pour un jeu donné, consommé par ce jeu.
+L'ensemble des Éléments d'un Savoir pour un jeu donné, que ce jeu transforme en énigmes (ou, pour un jeu à énigmes écrites à la main, un ensemble de ces énigmes).
 _Avoid_: Bundle, DLC
 _Code_: `ContentPack`
 

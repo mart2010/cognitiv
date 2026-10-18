@@ -18,7 +18,7 @@ Document de travail issu de la session d'exploration. Complète `BRIEF.md`. Méc
 | Domaine | Candidat | Statut |
 |---|---|---|
 | Raisonnement et logique (S) | **L'atelier** (règle cachée) | Retenu |
-| Mémoire de travail (S) | **La vitrine** (« qu'est-ce qui a changé ? ») | Retenu |
+| Mémoire (S) | Jeu d'apprentissage de connaissances sous contrainte de mémoire (géographie d'abord) ; **La vitrine** devient sa phase d'observation | À concevoir (2026-10-18) |
 | Attention et concentration (P) | Suivi d'objets multiples (thème à revoir, voir ci-dessous) ou **Vigilance** | À trancher |
 
 ### L'atelier (règle cachée)

@@ -9,7 +9,7 @@ Documents de référence : `BRIEF.md` (problème, périmètre, contraintes), `IN
 - Brief rédigé et enrichi (domaines cognitifs, mode de séance, piste « acquisition de connaissances », règle de texte assouplie).
 - Inventaire des jeux amorcé. Jalon des 3 jeux :
   - Raisonnement/logique : **L'atelier** (règle cachée), retenu.
-  - Mémoire de travail : **La vitrine** (« qu'est-ce qui a changé ? »), retenu.
+  - Mémoire : **La vitrine** n'est plus retenue seule comme deuxième jeu (2026-10-18, survey : la mécanique existe déjà en open source, ex. Room Inspector / Object Displacement dans sidhant947/puzzle, et le N-back aussi). Le thème mémoire devient des jeux d'**apprentissage de connaissances** sous contrainte de mémoire (voir « Décisions prises »). La vitrine survit comme phase d'observation du moteur.
   - Attention : suivi d'objets multiples ou Vigilance, à trancher plus tard (après L'atelier). Thème à trouver pour l'un et l'autre (pas le ciel étoilé, réservé aux jeux de connaissances).
 - Pile envisagée : Flutter (Dart), à confirmer par ADR. Appareil de test : Pixel 8a. Développement sous Windows ou Linux.
 - Premier jeu à construire : **L'atelier**. Les jeux de raisonnement et logique sont les plus difficiles à rendre fun et à concevoir (règles, générateur, unicité de solution), mais ils sont essentiels au concept. Si on n'y arrive pas, le concept ne tient pas : on le teste donc en premier. La Vitrine passe en deuxième.
@@ -22,7 +22,12 @@ Documents de référence : `BRIEF.md` (problème, périmètre, contraintes), `IN
 - Renommage (2026-10-17) : la Famille **Gravité** devient **Tassement** (`Packing`, `PackingRule`, `RuleFamily.packing`) : « Gravité » laissait croire que les formes tombent toujours vers le bas, alors que la direction est un paramètre de la Règle (4 directions). Les mentions plus bas qui disent « Tassement » désignaient la Gravité au moment où elles ont été écrites. Un Profil de génération sauvegardé avec l'ancien nom `gravity` est illisible et retombe sur le réglage par défaut.
 
 - Trois axes de classification à distinguer : domaine cognitif, mode de séance (avec ou sans paliers), domaine de connaissance (hors v1).
-- Mémoire à long terme et jeux de connaissances (ciel étoilé, atlas, corps humain…) : hors jalon v1, à revoir plus tard.
+- Mémoire à long terme et jeux de connaissances : désormais le **thème mémoire** (2026-10-18, remplace « hors jalon v1 »).
+  - Organisation : un jeu par **mécanique**, pas par domaine ; les **Savoirs** (géographie, ciel, anatomie, botanique, vivant…) arrivent en **packs de contenu** d'**Éléments**. La forme du contenu choisit la mécanique : spatial (géographie, ciel, anatomie : « où est-ce ? ») ou taxonomique (botanique, vivant : « qu'est-ce que c'est ? »).
+  - Premier Savoir : **géographie** (pays, régions, parcs, villes ; données Natural Earth à vérifier côté licence). Le ciel étoilé vient en second, pour vérifier que le moteur est indépendant du contenu.
+  - Différence avec un quiz (Seterra, Sporcle…) : encodage contraint (voir un contenu quelques secondes, puis le replacer ou le nommer) puis réapparition espacée des Éléments à consolider, sans notification ni série.
+  - Vocabulaire à reporter dans les glossaires : Savoir, Pack de contenu (redéfini), Élément. L'état de maîtrise d'un Élément est un nouvel état stocké par la plateforme, en tension avec l'ADR 0004 : à grill.
+  - Question ouverte (2026-10-18) : une seule app ou plusieurs ? Voir « À décider avant le prototype ».
 - Texte toléré quand le contenu l'exige. Jeux de mots ou lexicaux toujours exclus (non-goal).
 - Contenu : approche hybride, généré pour le volume, écrit à la main avec Claude pour les énigmes soignées et les packs (unicité de solution vérifiée par solveur et tests).
 - Ne jamais présenter le dual n-back ni aucun jeu comme améliorant le QI ou la santé cognitive.
@@ -80,6 +85,8 @@ Constaté le 2026-10-17 en essayant l'écran des règles : lister toutes les Fam
 
 ## À décider avant le prototype
 
+- [ ] Une seule app ou plusieurs ? Le domaine mémoire (packs graphiques lourds, public « apprenant ») peut ne pas coller avec un public « brain training ». Architecture déjà réversible (jeux = paquets, `app/` = coque) ; critères pour trancher une fois 2 ou 3 jeux jouables : poids de l'app, cohérence du public, temps de maintenance, valeur réelle de la plateforme commune.
+
 - [x] Choix du jeu de comparaison : **Tango-like** (Takuzu/Binairo), retenu. Utiliser les noms génériques du genre dans nos documents, pas les marques.
 - [x] Jouer à Samewise (fait en session). Retour : format à règle cachée sur grille carrée, mais limité aux transformations 2D simples (couleur de case) ; a motivé l'exploration du modèle de L'atelier ci-dessus.
 - [x] Écrire des énigmes de L'atelier à la main — remplacé par un générateur (10 énigmes, chacune vérifiée automatiquement contre un catalogue de règles avant d'être présentée, dans l'esprit de l'ADR 0001). Plus robuste qu'écrire à la main, et permet de rejouer une énigme avec une instance neuve à chaque fois.
@@ -94,7 +101,7 @@ Constaté le 2026-10-17 en essayant l'écran des règles : lister toutes les Fam
 
 ## Plus tard
 
-- [ ] La vitrine (deuxième jeu, mémoire de travail).
+- [ ] Jeu de mémoire / apprentissage de connaissances (deuxième jeu) : reprendre `/grill-domain` sur Savoir, Élément, état de maîtrise, unité d'Énigme, révision espacée sans notification.
 - [ ] Jeu d'attention du jalon : suivi d'objets multiples ou Vigilance, et leur thème, à trancher une fois L'atelier avancé.
 - [ ] Monétisation des bundles et packs payants.
 - [ ] Sauvegarde sur Google Drive, puis iCloud.
