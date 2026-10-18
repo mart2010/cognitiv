@@ -25,8 +25,9 @@ Documents de référence : `BRIEF.md` (problème, périmètre, contraintes), `IN
 - Mémoire à long terme et jeux de connaissances : désormais le **thème mémoire** (2026-10-18, remplace « hors jalon v1 »).
   - Organisation : un jeu par **mécanique**, pas par domaine ; les **Savoirs** (géographie, ciel, anatomie, botanique, vivant…) arrivent en **packs de contenu** d'**Éléments**. La forme du contenu choisit la mécanique : spatial (géographie, ciel, anatomie : « où est-ce ? ») ou taxonomique (botanique, vivant : « qu'est-ce que c'est ? »).
   - Premier Savoir : **géographie** (pays, régions, parcs, villes ; données Natural Earth à vérifier côté licence). Le ciel étoilé vient en second, pour vérifier que le moteur est indépendant du contenu.
-  - Différence avec un quiz (Seterra, Sporcle…) : encodage contraint (voir un contenu quelques secondes, puis le replacer ou le nommer) puis réapparition espacée des Éléments à consolider, sans notification ni série.
-  - Vocabulaire à reporter dans les glossaires : Savoir, Pack de contenu (redéfini), Élément. L'état de maîtrise d'un Élément est un nouvel état stocké par la plateforme, en tension avec l'ADR 0004 : à grill.
+  - Différence avec un quiz (Seterra, Sporcle…) : encodage contraint (voir un contenu quelques secondes, puis le replacer ou le nommer) puis le Rappel après une Distraction.
+  - Vocabulaire reporté dans `games/recall/CONTEXT.md` (Facette, Lien, Geste, Scène, Relation, Réseau de traversée…) et dans le glossaire de la plateforme (Savoir, Pack de contenu, Élément).
+  - **Pas d'évaluation de la Maîtrise (2026-10-18)** : le joueur choisit lui-même son Niveau (format, Facettes, Gestes, Aide au rappel, Réseau de traversée) et monte ou descend à son gré, comme dans L'atelier. Pas d'état d'apprentissage ni de révision espacée en v1 ; le contrat reste à trois fonctions (ADR 0004). La mémoire long terme passe par un Rappel différé dans la Partie (à concevoir).
   - Question ouverte (2026-10-18) : une seule app ou plusieurs ? Voir « À décider avant le prototype ».
 - Texte toléré quand le contenu l'exige. Jeux de mots ou lexicaux toujours exclus (non-goal).
 - Contenu : approche hybride, généré pour le volume, écrit à la main avec Claude pour les énigmes soignées et les packs (unicité de solution vérifiée par solveur et tests).
@@ -101,7 +102,7 @@ Constaté le 2026-10-17 en essayant l'écran des règles : lister toutes les Fam
 
 ## Plus tard
 
-- [ ] Jeu de mémoire / apprentissage de connaissances (deuxième jeu) : reprendre `/grill-domain` sur Savoir, Élément, état de maîtrise, unité d'Énigme, révision espacée sans notification.
+- [ ] Jeu de mémoire / apprentissage de connaissances (deuxième jeu) : poursuivre `/grill-domain` (Rappel différé dans la Partie, forme d'une Étude-éclair, premier jeu de données Natural Earth), nom définitif du jeu.
 - [ ] Jeu d'attention du jalon : suivi d'objets multiples ou Vigilance, et leur thème, à trancher une fois L'atelier avancé.
 - [ ] Monétisation des bundles et packs payants.
 - [ ] Sauvegarde sur Google Drive, puis iCloud.

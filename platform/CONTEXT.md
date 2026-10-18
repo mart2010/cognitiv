@@ -44,11 +44,6 @@ Les données qu'un jeu fournit pour décrire où en est une énigme en cours (ex
 _Avoid_: Sauvegarde, snapshot
 _Code_: `ResumeState`
 
-**État d'apprentissage**:
-La donnée qu'un jeu d'apprentissage décrit pour savoir ce que le joueur maîtrise d'une Partie à l'autre (la Maîtrise, côté jeu). La plateforme la stocke par joueur et par jeu sans la lire ; le jeu la met à jour après chaque Partie (ADR 0009).
-_Avoid_: Progression (dérivée de faits que la plateforme connaît), sauvegarde
-_Code_: `LearningState`
-
 **Niveau franchi**:
 Verdict renvoyé par le jeu à la fin d'une partie, selon ses propres seuils. La plateforme s'en sert pour débloquer le niveau suivant, sans interpréter le score.
 _Avoid_: Réussite, validation

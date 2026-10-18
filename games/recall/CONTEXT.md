@@ -1,6 +1,6 @@
 # Rappel
 
-Jeu de mémoire et d'apprentissage de connaissances : le joueur étudie des Éléments d'un Savoir sous contrainte de temps, est distrait, puis les rappelle. Le premier Savoir est la géographie. Nom de travail (jeu nommé d'après sa mécanique, ADR 0003) ; le nom définitif reste à trancher. Utilise les termes énigme, partie, niveau et score de la plateforme, plus Savoir, Élément et Pack de contenu.
+Jeu de mémoire et d'apprentissage de connaissances : le joueur étudie des Éléments d'un Savoir sous contrainte de temps, est distrait, puis les rappelle. Le premier Savoir est la géographie. Nom de travail (jeu nommé d'après sa mécanique, ADR 0003) ; le nom définitif reste à trancher. Utilise les termes énigme, partie, niveau et score de la plateforme, plus Savoir, Élément et Pack de contenu. Le jeu n'évalue pas le joueur : c'est lui qui choisit son Niveau, comme dans L'atelier.
 
 ## Language
 
@@ -31,7 +31,7 @@ La Facette que le joueur doit produire.
 _Code_: `Answer`
 
 **Lien**:
-Le couple (Élément, Indice → Réponse), par exemple « Kenya : forme → nom ». L'unité que la Maîtrise suit.
+Le couple (Élément, Indice → Réponse), par exemple « Kenya : forme → nom ». L'unité de base d'une Énigme : ce qu'on demande, indépendamment du Niveau.
 _Avoid_: Fait, carte
 _Code_: `Link`
 
@@ -47,10 +47,16 @@ _Code_: `FlashStudy`
 **Aide au rappel**:
 La force de l'Indice au moment du Rappel, du plus faible au plus fort : saisie libre, première lettre et longueur, choix parmi des propositions. Un réglage de Niveau, pas un mode.
 _Code_: `RecallAid`
+ 
+**Scène**:
+Le fond sur lequel des Éléments sont positionnés : une carte, un schéma du corps (avec couches et vues), une voûte céleste. Le moteur manipule une Scène sans savoir de quel Savoir elle vient.
+_Avoid_: Carte (réservé à la géographie), décor
+_Code_: `Scene`
 
-### Progression
+**Relation**:
+Une Facette qui lie des Éléments entre eux, de trois natures : voisinage (symétrique), inclusion (hiérarchique : continent ⊃ pays), flux (orienté : circulation du sang, cours d'un fleuve).
+_Code_: `Relation`
 
-**Maîtrise**:
-Ce que le jeu sait d'un joueur, Lien par Lien. Sert à choisir quels Liens poser et à suggérer une montée entre deux Parties, jamais à changer le Niveau en cours de Partie. Stockée par la plateforme comme donnée opaque (ADR 0009).
-_Avoid_: Score (un Score est celui d'une Partie), XP
-_Code_: `Mastery`
+**Réseau de traversée**:
+L'ensemble des Éléments traversables et de leurs adjacences pour une Énigme de chemin (ex. terre seulement, terre et mers, métropole seulement). Annoncé au joueur : le même couple de points donne des réponses différentes selon le Réseau (France–Brésil : une frontière par la Guyane, ou plus si les territoires hors métropole sont exclus). La Réponse est le nombre d'Éléments traversés, départ et arrivée exclus.
+_Code_: `CrossingNetwork`
