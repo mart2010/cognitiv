@@ -111,7 +111,6 @@ class _StudyViewState extends State<StudyView> with SingleTickerProviderStateMix
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final ids = widget.study.studiedItemIds;
-    final accent = theme.colorScheme.primary.withValues(alpha: 0.7);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -130,10 +129,9 @@ class _StudyViewState extends State<StudyView> with SingleTickerProviderStateMix
             clipBehavior: Clip.antiAlias,
             child: CartographerMapView(
               baseMap: widget.baseMap,
-              fills: {for (final id in ids) id: accent},
+              focus: ids.toSet(),
               labels: ids.toSet(),
               labelTexts: _labelTexts,
-              dimOthers: true,
               language: widget.language,
             ),
           ),

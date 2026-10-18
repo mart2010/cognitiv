@@ -1,8 +1,9 @@
 import 'package:cartographer/cartographer.dart' as cartographer;
-import 'package:flutter/foundation.dart' show mapEquals;
+import 'package:flutter/foundation.dart' show mapEquals, setEquals;
 import 'package:flutter/material.dart';
 
 import 'country_tints.dart';
+import 'label_layout.dart';
 import 'map_projection.dart';
 
 /// La Scène du Cartographe : les contours des Éléments d'une Carte de base, où l'on touche
@@ -22,9 +23,9 @@ class CartographerMapView extends StatefulWidget {
   /// Texte à écrire à la place du nom, par identifiant (ex. le nom et la capitale, sur deux lignes).
   final Map<String, String> labelTexts;
 
-  /// Met en retrait tous les Éléments qui n'ont pas de couleur dans `fills`, pour concentrer le
-  /// regard sur ceux à retenir.
-  final bool dimOthers;
+  /// Si renseigné, ces Éléments gardent leur teinte et reçoivent un contour net, tous les autres
+  /// sont mis en retrait : pour concentrer le regard sur ceux à retenir sans changer leurs couleurs.
+  final Set<String>? focus;
 
   /// Point à marquer (le toucher du joueur).
   final cartographer.GeoPoint? marker;
@@ -38,7 +39,7 @@ class CartographerMapView extends StatefulWidget {
     this.fills = const {},
     this.labels = const {},
     this.labelTexts = const {},
-    this.dimOthers = false,
+    this.focus,
     this.marker,
     this.language = cartographer.NameLanguage.fr,
     this.onTap,
@@ -100,7 +101,7 @@ class _CartographerMapViewState extends State<CartographerMapView> {
                   fills: widget.fills,
                   labels: widget.labels,
                   labelTexts: widget.labelTexts,
-                  dimOthers: widget.dimOthers,
+                  focus: widget.focus,
                   marker: widget.marker,
                   language: widget.language,
                   tints: {for (final entry in _tints.entries) entry.key: palette[entry.value]},
@@ -124,7 +125,7 @@ class _MapPainter extends CustomPainter {
   final Map<String, Color> fills;
   final Set<String> labels;
   final Map<String, String> labelTexts;
-  final bool dimOthers;
+  final Set<String>? focus;
   final cartographer.GeoPoint? marker;
   final cartographer.NameLanguage language;
   final Map<String, Color> tints;
@@ -139,7 +140,7 @@ class _MapPainter extends CustomPainter {
     required this.fills,
     required this.labels,
     required this.labelTexts,
-    required this.dimOthers,
+    required this.focus,
     required this.marker,
     required this.language,
     required this.tints,
@@ -156,34 +157,35 @@ class _MapPainter extends CustomPainter {
       ..strokeWidth = 0.8
       ..strokeJoin = StrokeJoin.round
       ..color = border;
+    // Ceux hors de la mise en avant d'abord, en retrait ; les autres par-dessus, avec leur contour net.
+    final focused = focus;
     for (final item in baseMap.items) {
       final path = paths[item.id]!;
       final base = fills[item.id] ?? tints[item.id]!;
-      canvas.drawPath(path, Paint()..color = dimOthers && !fills.containsKey(item.id) ? base.withValues(alpha: 0.3) : base);
-      canvas.drawPath(path, stroke);
+      final inFocus = focused == null || focused.contains(item.id);
+      if (inFocus) continue;
+      canvas.drawPath(path, Paint()..color = base.withValues(alpha: 0.28));
+      canvas.drawPath(path, stroke..color = border.withValues(alpha: 0.35));
     }
+    stroke.color = border;
     for (final item in baseMap.items) {
-      if (!labels.contains(item.id)) continue;
-      final text = labelTexts[item.id] ?? item.names.of(language);
-      TextPainter styled(TextStyle style) => TextPainter(
-        text: TextSpan(text: text, style: style),
-        textAlign: TextAlign.center,
-        textDirection: TextDirection.ltr,
-      )..layout();
-      const base = TextStyle(fontSize: 13, fontWeight: FontWeight.w600, height: 1.15);
-      // Un contour de la couleur de la mer sous le texte le garde lisible sur n'importe quel pays.
-      final halo = styled(base.copyWith(
-        foreground: Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 3
-          ..strokeJoin = StrokeJoin.round
-          ..color = sea,
-      ));
-      final fill = styled(base.copyWith(color: markerColor));
-      final origin = projection.toCanvas(item.anchor) - Offset(fill.width / 2, fill.height / 2);
-      halo.paint(canvas, origin);
-      fill.paint(canvas, origin);
+      final path = paths[item.id]!;
+      final base = fills[item.id] ?? tints[item.id]!;
+      if (focused != null && !focused.contains(item.id)) continue;
+      canvas.drawPath(path, Paint()..color = base);
+      canvas.drawPath(path, stroke);
+      if (focused != null) {
+        canvas.drawPath(
+          path,
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2
+            ..strokeJoin = StrokeJoin.round
+            ..color = markerColor.withValues(alpha: 0.85),
+        );
+      }
     }
+    _paintLabels(canvas, size);
     if (marker != null) {
       final center = projection.toCanvas(marker!);
       canvas.drawCircle(center, 7, Paint()..color = markerColor.withValues(alpha: 0.25));
@@ -191,11 +193,60 @@ class _MapPainter extends CustomPainter {
     }
   }
 
+  /// Pose les libellés sans chevauchement (`placeLabels`) : au centre du pays quand il y tient, sinon
+  /// à côté, relié par un trait, avec un point sur le pays.
+  void _paintLabels(Canvas canvas, Size size) {
+    const base = TextStyle(fontSize: 13, fontWeight: FontWeight.w600, height: 1.15);
+    final items = [for (final item in baseMap.items) if (labels.contains(item.id)) item];
+    final inks = <TextPainter>[];
+    final halos = <TextPainter>[];
+    for (final item in items) {
+      final text = labelTexts[item.id] ?? item.names.of(language);
+      TextPainter styled(TextStyle style) => TextPainter(
+        text: TextSpan(text: text, style: style),
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr,
+      )..layout();
+      // Un contour de la couleur de la mer sous le texte le garde lisible sur n'importe quel pays.
+      halos.add(styled(base.copyWith(
+        foreground: Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3
+          ..strokeJoin = StrokeJoin.round
+          ..color = sea,
+      )));
+      inks.add(styled(base.copyWith(color: markerColor)));
+    }
+    final placed = placeLabels(size, [
+      for (var i = 0; i < items.length; i++)
+        LabelRequest(
+          anchor: projection.toCanvas(items[i].anchor),
+          bounds: paths[items[i].id]!.getBounds(),
+          size: Size(inks[i].width, inks[i].height),
+        ),
+    ]);
+    final line = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1
+      ..color = markerColor.withValues(alpha: 0.7);
+    for (var i = 0; i < items.length; i++) {
+      final rect = placed[i].rect;
+      if (placed[i].displaced) {
+        final anchor = projection.toCanvas(items[i].anchor);
+        final target = Offset(anchor.dx.clamp(rect.left, rect.right), anchor.dy.clamp(rect.top, rect.bottom));
+        canvas.drawLine(anchor, target, line);
+        canvas.drawCircle(anchor, 2.5, Paint()..color = markerColor);
+      }
+      halos[i].paint(canvas, rect.topLeft);
+      inks[i].paint(canvas, rect.topLeft);
+    }
+  }
+
   @override
   bool shouldRepaint(_MapPainter old) =>
       old.paths != paths ||
       !mapEquals(old.labelTexts, labelTexts) ||
-      old.dimOthers != dimOthers ||
+      !setEquals(old.focus, focus) ||
       old.labels != labels ||
       old.marker != marker ||
       !mapEquals(old.tints, tints) ||
