@@ -1,6 +1,6 @@
-# Rappel
+# Le cartographe
 
-Jeu de mémoire et d'apprentissage de connaissances : le joueur étudie des Éléments d'un Savoir sous contrainte de temps, est distrait, puis les rappelle. Le premier Savoir est la géographie. Nom de travail (jeu nommé d'après sa mécanique, ADR 0003) ; le nom définitif reste à trancher. Utilise les termes énigme, partie, niveau et score de la plateforme, plus Savoir, Élément et Pack de contenu. Le jeu n'évalue pas le joueur : c'est lui qui choisit son Niveau, comme dans L'atelier.
+Jeu de mémoire et d'apprentissage de connaissances : le joueur étudie des Éléments d'un Savoir sous contrainte de temps, est distrait, puis les rappelle. Le premier Savoir est la géographie. Nom retenu le 2026-10-18 (« The Cartographer » en anglais) : le joueur redessine le monde de mémoire, et le nom rappelle L'atelier. Le nom de code reste `recall` (ADR 0007). Utilise les termes énigme, partie, niveau et score de la plateforme, plus Savoir, Élément et Pack de contenu. Le jeu n'évalue pas le joueur : c'est lui qui choisit son Niveau, comme dans L'atelier.
 
 ## Language
 

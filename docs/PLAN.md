@@ -87,7 +87,10 @@ Constaté le 2026-10-17 en essayant l'écran des règles : lister toutes les Fam
 
 ## Première tranche du jeu Rappel (proposée le 2026-10-18)
 
-1. Script de build `games/recall/tool/` : lit Natural Earth (pays et villes) pour une seule Carte de base (Amérique du Sud ou Afrique de l'Ouest), écrit un JSON d'Éléments (nom FR/EN, position, contour simplifié, capitale).
+1. [x] Script de build `games/recall/tool/` (fait 2026-10-18) : lit les GeoJSON Natural Earth 1:10m (`admin_0_map_units`, `populated_places`) pour l'**Amérique du Sud** et écrit `games/recall/data/south_america.json` (78 Ko : 13 Éléments, noms FR/EN, capitales, ancre, voisinage, contours simplifiés). Dart pur, 20 tests, la logique (simplification Douglas-Peucker, voisinage par sommets partagés, sélection) est séparée de la lecture des fichiers. Commande documentée en tête de `tool/build_base_map.dart`.
+   - Retenu : 12 États souverains + la **Guyane** (unité de la France, séparée grâce aux `map_units` ; le fichier `admin_0_countries` la range dans la France, continent Europe). Exclus : îles Malouines (statut disputé), Ilha Brasileira et champ de glace de Patagonie (statut indéterminé). Îles lointaines (Pâques, Galápagos, Juan Fernández) écartées par le cadre ; îlots sous 0,02 deg² écartés.
+   - Pièges rencontrés dans les données : `SOV_A3` vaut `FR1` pour la France (on utilise `ADM0_A3`) ; `NAME_FR` des villes sans accents (« Asuncion », corrigé par une table) ; la Bolivie a deux capitales (La Paz et Sucre, toutes deux `primary`) et le Chili une capitale alternative (Valparaíso, `alt`) : règle d'acceptation en Nommage à trancher.
+   - Voisinage vérifié sur des faits connus (Brésil : 10 voisins dont la Guyane ; Chili : Argentine, Bolivie, Pérou ; Guyane : Brésil et Suriname).
 2. Domaine pur `games/recall/` : Éléments, Facettes, Étude-éclair, Gestes **Placer** et **Nommer** (avec Aide au rappel), Score pondéré par le Niveau, Bilan de fin de Partie. Hasard et horloge injectés (ADR 0005). Contrat à trois fonctions (ADR 0004).
 3. Écran Flutter : Scène carte, étude chronométrée, Distraction, Rappel, Bilan.
 4. Plus tard : Repérer l'erreur, Relations et Réseau de traversée, Grandeurs, autres Cartes de base, villes principales, éléments naturels, second Savoir.
