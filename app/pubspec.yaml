@@ -8,6 +8,8 @@ environment:
 
 dependencies:
   audioplayers: ^6.8.1
+  cartographer:
+    path: ../games/cartographer
   flutter:
     sdk: flutter
   shared_preferences: ^2.5.6
@@ -25,6 +27,7 @@ flutter:
   assets:
     - assets/icon/
     - assets/sounds/
+    - assets/maps/
 
 flutter_launcher_icons:
   android: "ic_launcher"
