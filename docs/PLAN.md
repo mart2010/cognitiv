@@ -27,6 +27,7 @@ Documents de référence : `BRIEF.md` (problème, périmètre, contraintes), `IN
   - Premier Savoir : **géographie** (pays, régions, parcs, villes ; données Natural Earth à vérifier côté licence). Le ciel étoilé vient en second, pour vérifier que le moteur est indépendant du contenu.
   - Différence avec un quiz (Seterra, Sporcle…) : encodage contraint (voir un contenu quelques secondes, puis le replacer ou le nommer) puis le Rappel après une Distraction.
   - Vocabulaire reporté dans `games/recall/CONTEXT.md` (Facette, Lien, Geste, Scène, Relation, Réseau de traversée…) et dans le glossaire de la plateforme (Savoir, Pack de contenu, Élément).
+  - Données (vérifié 2026-10-18 dans les fichiers Natural Earth 10m, domaine public) : pays (`NAME_FR`, `POP_EST`, `CONTINENT`, `SUBREGION`), provinces/États niveau 1 (4 596 entités, `name_fr`), villes (7 342 lieux, `NAME_FR`, `POP_MAX`, `ADM0CAP`), mers et océans (306 zones, `name_fr`). Les **Cartes de base** à toute échelle (Espagne, Chine, Sichuan…) découlent de ces niveaux. Voisinage des pays et provinces : calculé hors ligne par un script de build, jamais dans l'app.
   - **Pas d'évaluation de la Maîtrise (2026-10-18)** : le joueur choisit lui-même son Niveau (format, Facettes, Gestes, Aide au rappel, Réseau de traversée) et monte ou descend à son gré, comme dans L'atelier. Pas d'état d'apprentissage ni de révision espacée en v1 ; le contrat reste à trois fonctions (ADR 0004). La mémoire long terme passe par un Rappel différé dans la Partie (à concevoir).
   - Question ouverte (2026-10-18) : une seule app ou plusieurs ? Voir « À décider avant le prototype ».
 - Texte toléré quand le contenu l'exige. Jeux de mots ou lexicaux toujours exclus (non-goal).
@@ -84,6 +85,15 @@ Constaté le 2026-10-17 en essayant l'écran des règles : lister toutes les Fam
 - Va de pair avec le travail sur les indices et les noms de règles : le bouton d'indice révèle aujourd'hui la Famille par son nom technique (`mirror`, `packing`…), à reprendre aussi (noms affichés, niveaux d'indice progressifs).
 - C'est vu comme le défi central de ce jeu : à traiter avec une session de conception (`/grill`) avant de figer l'écran.
 
+## Première tranche du jeu Rappel (proposée le 2026-10-18)
+
+1. Script de build `games/recall/tool/` : lit Natural Earth (pays et villes) pour une seule Carte de base (Amérique du Sud ou Afrique de l'Ouest), écrit un JSON d'Éléments (nom FR/EN, position, contour simplifié, capitale).
+2. Domaine pur `games/recall/` : Éléments, Facettes, Étude-éclair, Gestes **Placer** et **Nommer** (avec Aide au rappel), Score pondéré par le Niveau, Bilan de fin de Partie. Hasard et horloge injectés (ADR 0005). Contrat à trois fonctions (ADR 0004).
+3. Écran Flutter : Scène carte, étude chronométrée, Distraction, Rappel, Bilan.
+4. Plus tard : Repérer l'erreur, Relations et Réseau de traversée, Grandeurs, autres Cartes de base, villes principales, éléments naturels, second Savoir.
+
+Questions ouvertes : nom définitif ; nature de la Distraction ; formule de Score ; règles de tolérance d'orthographe (FR/EN, alias) ; frontières contestées et territoires hors métropole ; schémas d'anatomie (licences à vérifier) ; une ou plusieurs apps.
+
 ## À décider avant le prototype
 
 - [ ] Une seule app ou plusieurs ? Le domaine mémoire (packs graphiques lourds, public « apprenant ») peut ne pas coller avec un public « brain training ». Architecture déjà réversible (jeux = paquets, `app/` = coque) ; critères pour trancher une fois 2 ou 3 jeux jouables : poids de l'app, cohérence du public, temps de maintenance, valeur réelle de la plateforme commune.
@@ -102,7 +112,7 @@ Constaté le 2026-10-17 en essayant l'écran des règles : lister toutes les Fam
 
 ## Plus tard
 
-- [ ] Jeu de mémoire / apprentissage de connaissances (deuxième jeu) : poursuivre `/grill-domain` (Rappel différé dans la Partie, forme d'une Étude-éclair, premier jeu de données Natural Earth), nom définitif du jeu.
+- [ ] Jeu de mémoire / apprentissage de connaissances (deuxième jeu) : prototype de la première tranche du jeu Rappel (voir « Première tranche » ci-dessous), nom définitif du jeu.
 - [ ] Jeu d'attention du jalon : suivi d'objets multiples ou Vigilance, et leur thème, à trancher une fois L'atelier avancé.
 - [ ] Monétisation des bundles et packs payants.
 - [ ] Sauvegarde sur Google Drive, puis iCloud.

@@ -15,9 +15,14 @@ Une manière de connaître un Élément. Cinq types : Attribut (nom, capitale), 
 _Avoid_: Propriété, champ
 _Code_: `Facet`
 
+**Carte de base**:
+Une Scène géographique cadrée que le joueur choisit, à n'importe quelle échelle (Europe de l'Ouest, Espagne, Afrique australe, Asie du Sud-Est, Chine, Sichuan…). C'est le moyen de généraliser le Savoir géographique sans changer le moteur.
+_Avoid_: Fond de carte, niveau
+_Code_: `BaseMap`
+
 **Région**:
-Un sous-ensemble d'Éléments d'un Savoir qui sert d'unité à une Partie (ex. l'Afrique de l'Ouest). Jamais tout le Savoir d'un bloc.
-_Avoid_: Zone, continent (une Région peut être plus petite)
+Les Éléments d'une Carte de base à un niveau donné (pays, provinces, villes, mers), qui servent d'unité à une Partie. Jamais tout le Savoir d'un bloc.
+_Avoid_: Zone, continent
 _Code_: `Region`
 
 ### Énigmes
@@ -43,6 +48,16 @@ _Code_: `Gesture`
 **Étude-éclair**:
 La séquence d'une Énigme : l'Étude (N Éléments montrés quelques secondes), la Distraction (courte tâche qui coupe l'encodage), puis le Rappel. Hérite du rythme de La vitrine sans sa question « qu'est-ce qui a changé ? ».
 _Code_: `FlashStudy`
+
+**Distraction**:
+La courte tâche entre l'Étude et le Rappel (compter, trier, toucher des cibles), indépendante du Savoir, qui coupe le maintien actif en mémoire de travail. Sa durée et sa nature sont des réglages de Niveau.
+_Avoid_: Pause, brouillage
+_Code_: `Distraction`
+
+**Bilan**:
+Les questions de fin de Partie qui redemandent des Éléments étudiés plus tôt, sans les remontrer : le Rappel différé, qui sollicite la mémoire à plus long terme sans rien stocker entre les Parties. Pèse davantage dans le Score que les Énigmes ordinaires.
+_Avoid_: Test, examen
+_Code_: `DelayedRecall`
 
 **Aide au rappel**:
 La force de l'Indice au moment du Rappel, du plus faible au plus fort : saisie libre, première lettre et longueur, choix parmi des propositions. Un réglage de Niveau, pas un mode.
