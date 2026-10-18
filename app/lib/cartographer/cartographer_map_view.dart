@@ -1,6 +1,8 @@
 import 'package:cartographer/cartographer.dart' as cartographer;
+import 'package:flutter/foundation.dart' show mapEquals;
 import 'package:flutter/material.dart';
 
+import 'country_tints.dart';
 import 'map_projection.dart';
 
 /// La Scène du Cartographe : les contours des Éléments d'une Carte de base, où l'on touche
@@ -40,6 +42,7 @@ class CartographerMapView extends StatefulWidget {
 class _CartographerMapViewState extends State<CartographerMapView> {
   Size? _pathsSize;
   Map<String, Path> _paths = const {};
+  late final Map<String, int> _tints = tintIndices(widget.baseMap);
 
   /// Les chemins ne dépendent que de la taille : on les refait seulement si elle change.
   Map<String, Path> _pathsFor(MapProjection projection, Size size) {
@@ -66,6 +69,7 @@ class _CartographerMapViewState extends State<CartographerMapView> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final palette = softTints(scheme.surfaceContainerHighest);
     return LayoutBuilder(
       builder: (context, constraints) {
         final size = constraints.biggest;
@@ -88,7 +92,7 @@ class _CartographerMapViewState extends State<CartographerMapView> {
                   labels: widget.labels,
                   marker: widget.marker,
                   language: widget.language,
-                  neutral: scheme.surfaceContainerHighest,
+                  tints: {for (final entry in _tints.entries) entry.key: palette[entry.value]},
                   border: scheme.outline,
                   sea: scheme.surfaceContainerLow,
                   markerColor: scheme.onSurface,
@@ -110,7 +114,7 @@ class _MapPainter extends CustomPainter {
   final Set<String> labels;
   final cartographer.GeoPoint? marker;
   final cartographer.NameLanguage language;
-  final Color neutral;
+  final Map<String, Color> tints;
   final Color border;
   final Color sea;
   final Color markerColor;
@@ -123,7 +127,7 @@ class _MapPainter extends CustomPainter {
     required this.labels,
     required this.marker,
     required this.language,
-    required this.neutral,
+    required this.tints,
     required this.border,
     required this.sea,
     required this.markerColor,
@@ -139,7 +143,7 @@ class _MapPainter extends CustomPainter {
       ..color = border;
     for (final item in baseMap.items) {
       final path = paths[item.id]!;
-      canvas.drawPath(path, Paint()..color = fills[item.id] ?? neutral);
+      canvas.drawPath(path, Paint()..color = fills[item.id] ?? tints[item.id]!);
       canvas.drawPath(path, stroke);
     }
     for (final item in baseMap.items) {
@@ -163,10 +167,10 @@ class _MapPainter extends CustomPainter {
   @override
   bool shouldRepaint(_MapPainter old) =>
       old.paths != paths ||
-      old.fills != fills ||
       old.labels != labels ||
       old.marker != marker ||
-      old.neutral != neutral ||
+      !mapEquals(old.tints, tints) ||
+      !mapEquals(old.fills, fills) ||
       old.border != border ||
       old.sea != sea;
 }
