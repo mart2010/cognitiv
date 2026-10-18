@@ -104,9 +104,9 @@ Les Éléments non connus d'une Étude-éclair, au plus `itemCount` du Niveau (4
 _Code_: `StudyBatch`
 
 **Maîtrise**:
-Ce que le jeu sait d'un joueur, Lien par Lien, d'une Partie à l'autre. Sert à choisir quoi poser (repérage, Lot d'étude) et à suggérer un autre genre de Lien quand tout est connu, jamais à changer le Niveau ni à imposer. Un « connu » stocké vieillit : le jeu en recontrôle quelques-uns à chaque Partie. États exacts à trancher. Stockée par la plateforme comme donnée opaque (ADR 0009).
+Ce que le jeu sait d'un joueur, Lien par Lien, d'une Partie à l'autre. Sert à choisir quoi poser (repérage, Lot d'étude) et à suggérer un autre genre de Lien quand tout est connu, jamais à changer le Niveau ni à imposer. Trois états par Lien, sans dates ni compteurs : à apprendre (raté la dernière fois), fragile (réussi une fois), solide (réussi de nouveau à une Partie suivante). Un seul pas par Lien et par Partie, d'après le dernier verdict : une réussite fait monter d'un cran, tout autre verdict ramène à « à apprendre » (un pays raté au Repérage puis réussi au Bilan devient fragile, jamais solide le même jour). Un « connu » stocké vieillit : le Repérage recontrôle toujours quelques Liens solides, et tire entre un genre nouveau et un genre fragile pour confirmer ou rétrograder ce qui est fragile. Fragile et solide comptent comme connus pour suggérer d'autres genres de Lien. Le joueur peut réinitialiser sa Maîtrise, par Carte de base ou en entier. Stockée par la plateforme comme donnée opaque (ADR 0009).
 _Avoid_: Score (un Score est celui d'une Partie), XP, niveau du joueur
-_Code_: `Mastery`
+_Code_: `Mastery`, `Knowledge`
 
 **Région**:
 L'ensemble des Éléments traversables et de leurs adjacences pour une Énigme de chemin (ex. terre seulement, terre et mers, métropole seulement). Annoncé au joueur : le même couple de points donne des réponses différentes selon le Réseau (France–Brésil : une frontière par la Guyane, ou plus si les territoires hors métropole sont exclus). La Réponse est le nombre d'Éléments traversés, départ et arrivée exclus.

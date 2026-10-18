@@ -20,6 +20,11 @@ extension RecallQuestionJsonEncoding on RecallQuestion {
 
 extension CartographerPuzzleJsonEncoding on CartographerPuzzle {
   Map<String, dynamic> toJson() => switch (this) {
+        Screening(:final language, :final questions) => {
+            'type': 'screening',
+            'language': language.name,
+            'questions': [for (final q in questions) q.toJson()],
+          },
         FlashStudy(:final language, :final questions, :final studySeconds, :final distractionSeconds) => {
             'type': 'flashStudy',
             'language': language.name,
@@ -55,6 +60,7 @@ class CartographerPuzzleCodec {
           studySeconds: json['studySeconds'] as int,
           distractionSeconds: json['distractionSeconds'] as int,
         ),
+      'screening' => Screening(language: language, questions: questions),
       'delayedRecall' => DelayedRecall(language: language, questions: questions),
       final other => throw FormatException('Type d\'Énigme inconnu : $other'),
     };

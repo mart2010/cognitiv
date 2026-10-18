@@ -11,8 +11,11 @@ export 'src/entities/cartographer_puzzle.dart';
 export 'src/entities/facet.dart';
 export 'src/entities/geo_point.dart';
 export 'src/entities/item.dart';
+export 'src/entities/knowledge.dart';
 export 'src/entities/link.dart';
+export 'src/entities/mastery.dart';
 export 'src/entities/name_language.dart';
+export 'src/entities/played_puzzle.dart';
 export 'src/entities/recall_aid.dart';
 export 'src/entities/recall_question.dart';
 
@@ -22,10 +25,13 @@ export 'src/domain_services/text_matcher.dart';
 
 export 'src/interface_adapters/base_map_codec.dart';
 export 'src/interface_adapters/cartographer_profile_codec.dart';
+export 'src/interface_adapters/mastery_codec.dart';
 export 'src/interface_adapters/cartographer_puzzle_codec.dart';
 export 'src/interface_adapters/system_random_source.dart';
 
 export 'src/use_cases/compute_cartographer_score.dart';
 export 'src/use_cases/evaluate_cartographer_answer.dart';
-export 'src/use_cases/generate_cartographer_puzzles.dart';
+export 'src/use_cases/prepare_cartographer_puzzles.dart';
+export 'src/use_cases/suggest_link_kinds.dart';
+export 'src/use_cases/update_mastery.dart';
 export 'src/use_cases/ports/random_source.dart';

@@ -1,19 +1,21 @@
 import 'recall_aid.dart';
 
 /// Niveau du Cartographe : un réglage de difficulté fixé par le jeu (`platform/CONTEXT.md`).
-/// Il règle le nombre d'Éléments étudiés, la durée d'étude, la durée de Distraction et
+/// Il règle la taille du Lot d'étude, la durée d'étude, la durée de Distraction et
 /// l'Aide au rappel. Le joueur choisit librement son Niveau, il n'y a pas de verrou ; la
 /// difficulté ne s'adapte jamais en secret.
 class CartographerLevel {
   /// De 1 (le plus facile) à `CartographerLevels.all.length`.
   final int number;
+  /// Taille du Lot d'étude : les Éléments non connus étudiés ensemble.
   final int itemCount;
   final int studySeconds;
   final int distractionSeconds;
   final RecallAid aid;
 
-  /// Nombre d'Études-éclair d'une Partie à ce Niveau.
-  final int studyCount;
+  /// Nombre maximal d'Études-éclair d'une Partie ; les ratés du Repérage au-delà restent de
+  /// côté, une Partie ne devient jamais interminable.
+  final int maxStudyCycles;
 
   /// Nombre de questions du Bilan de fin de Partie.
   final int delayedRecallCount;
@@ -24,7 +26,7 @@ class CartographerLevel {
     required this.studySeconds,
     required this.distractionSeconds,
     required this.aid,
-    this.studyCount = 3,
+    this.maxStudyCycles = 2,
     this.delayedRecallCount = 5,
   });
 

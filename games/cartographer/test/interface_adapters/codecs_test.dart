@@ -4,6 +4,7 @@ import 'package:cartographer/cartographer.dart';
 import 'package:test/test.dart';
 
 import '../support/real_base_map.dart';
+import '../support/scripted_player.dart';
 
 void main() {
   group('BaseMapCodec', () {
@@ -49,19 +50,22 @@ void main() {
   group('CartographerPuzzleCodec', () {
     final map = loadSouthAmerica();
 
-    test("aller-retour d'une Partie complète, via JSON texte", () {
-      final puzzles = GenerateCartographerPuzzles(random: SystemRandomSource(5)).call(GenerateCartographerRequest(
+    test("aller-retour d'une Partie complète (Repérage, Études, Bilan), via JSON texte", () {
+      final request = PrepareCartographerRequest(
         baseMap: map,
         level: CartographerLevels.byNumber(2),
         profile: CartographerProfile.defaults(),
         language: NameLanguage.fr,
-      ));
+      );
+      final history = playWholeRun(PrepareCartographerPuzzles(random: SystemRandomSource(5)), request, (_, __) => knowsNothing);
+      final puzzles = [for (final p in history) p.puzzle];
       final restored = [
         for (final p in puzzles) CartographerPuzzleCodec.fromJson(jsonDecode(jsonEncode(p.toJson())) as Map<String, dynamic>),
       ];
       expect([for (final p in restored) p.toJson()], [for (final p in puzzles) p.toJson()]);
+      expect(restored.first, isA<Screening>());
+      expect(restored.whereType<FlashStudy>(), isNotEmpty);
       expect(restored.last, isA<DelayedRecall>());
-      expect(restored.first, isA<FlashStudy>());
     });
 
     test('refuse un type inconnu', () {

@@ -141,16 +141,13 @@ void main() {
     expect(mapSize.height, greaterThan(300));
   });
 
-  test("les questions d'entraînement sont toutes des Placer, d'Éléments distincts par Étude", () {
+  test("les questions d'entraînement sont le Repérage : un Placer par pays, tous distincts", () {
     final level = cartographer.CartographerLevels.byNumber(3);
     for (var seed = 0; seed < 20; seed++) {
       final questions = placeQuestions(map, level, seed);
-      expect(questions, hasLength(level.itemCount * level.studyCount));
+      expect(questions, hasLength(map.items.length));
       expect(questions.every((q) => q.kind.gesture == cartographer.Gesture.place), isTrue);
-      for (var s = 0; s < level.studyCount; s++) {
-        final ids = questions.skip(s * level.itemCount).take(level.itemCount).map((q) => q.itemId);
-        expect(ids.toSet(), hasLength(level.itemCount));
-      }
+      expect(questions.map((q) => q.itemId).toSet(), hasLength(map.items.length));
     }
   });
 }

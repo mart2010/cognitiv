@@ -1,5 +1,5 @@
-import '../entities/cartographer_answer.dart';
 import '../entities/cartographer_level.dart';
+import '../entities/played_puzzle.dart';
 
 /// Seuils d'une Partie. Provisoires : à affiner avec le jeu réel.
 class LevelThresholds {
@@ -15,13 +15,6 @@ class LevelThresholds {
 /// Ce que le jeu suggère après une Partie. Jamais imposé : le joueur choisit son Niveau.
 enum LevelSuggestion { raise, keep, lower }
 
-/// Le résultat d'une question, pour le calcul du Score. `delayed` : question du Bilan.
-class QuestionOutcome {
-  final AnswerVerdict verdict;
-  final bool delayed;
-  const QuestionOutcome(this.verdict, {required this.delayed});
-}
-
 class CartographerScoreResult {
   final int score;
   final bool levelCleared;
@@ -33,6 +26,11 @@ class CartographerScoreResult {
 /// question rapporte les points du Niveau fois son crédit (exact 1, proche 0,5) ; une
 /// question du Bilan compte double, puisqu'elle teste la mémoire à plus long terme. Formule
 /// provisoire, comme celle de L'atelier. Pas de bonus de vitesse : pas de pression de temps.
+///
+/// Le verdict « niveau franchi » et la suggestion se jugent sur le **Bilan seul**, pour qu'un
+/// débutant qui apprend ne soit pas pénalisé par son point de départ ; sans Bilan (rien à
+/// étudier : le joueur connaissait tout), sur le Repérage. La longueur d'une Partie varie, rien
+/// ici ne suppose un nombre fixe de questions.
 class ComputeCartographerScore {
   static const delayedWeight = 2.0;
 
@@ -42,13 +40,14 @@ class ComputeCartographerScore {
     LevelThresholds thresholds = const LevelThresholds(),
   }) {
     var credit = 0.0;
-    var maxCredit = 0.0;
     for (final outcome in outcomes) {
-      final weight = outcome.delayed ? delayedWeight : 1.0;
+      final weight = outcome.phase == PuzzlePhase.delayed ? delayedWeight : 1.0;
       credit += outcome.verdict.credit * weight;
-      maxCredit += weight;
     }
-    final ratio = maxCredit == 0 ? 0.0 : credit / maxCredit;
+    final judged = outcomes.any((o) => o.phase == PuzzlePhase.delayed)
+        ? outcomes.where((o) => o.phase == PuzzlePhase.delayed)
+        : outcomes.where((o) => o.phase == PuzzlePhase.screening);
+    final ratio = judged.isEmpty ? 0.0 : judged.map((o) => o.verdict.credit).reduce((a, b) => a + b) / judged.length;
     final cleared = ratio >= thresholds.minimumRatioToClearLevel;
     final suggestion = cleared && CartographerLevels.hasNext(level)
         ? LevelSuggestion.raise

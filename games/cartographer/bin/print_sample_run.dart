@@ -1,5 +1,6 @@
-// Script de démo (Frameworks & Drivers, pas Interface Adapter) : génère une vraie Partie
-// du Cartographe sur l'Amérique du Sud et l'affiche dans le terminal.
+// Script de démo (Frameworks & Drivers, pas Interface Adapter) : joue deux Parties du
+// Cartographe sur l'Amérique du Sud avec un joueur simulé, et affiche chaque phase et la
+// Maîtrise qui en résulte. Le joueur connaît d'abord 5 pays, puis retient ce qu'il étudie.
 // Usage : dart run bin/print_sample_run.dart [niveau] [graine]
 import 'dart:convert';
 import 'dart:io';
@@ -7,38 +8,63 @@ import 'dart:io';
 import 'package:cartographer/cartographer.dart';
 
 void main(List<String> args) {
-  final levelNumber = args.isNotEmpty ? int.parse(args.first) : 4;
+  final levelNumber = args.isNotEmpty ? int.parse(args.first) : 3;
   final seed = args.length > 1 ? int.parse(args[1]) : DateTime.now().millisecondsSinceEpoch;
   final baseMap = BaseMapCodec.fromJson(
     jsonDecode(File('data/south_america.json').readAsStringSync()) as Map<String, dynamic>,
   );
   final level = CartographerLevels.byNumber(levelNumber);
-  print('Niveau $levelNumber, graine $seed, aide : ${level.aid.name}\n');
+  final profile = CartographerProfile.defaults();
+  final prepare = PrepareCartographerPuzzles(random: SystemRandomSource(seed));
+  final update = UpdateMastery();
+  final score = ComputeCartographerScore();
 
-  final puzzles = GenerateCartographerPuzzles(random: SystemRandomSource(seed)).call(GenerateCartographerRequest(
-    baseMap: baseMap,
-    level: level,
-    profile: CartographerProfile.defaults(),
-    language: NameLanguage.fr,
-  ));
+  // Ce que le joueur simulé connaît avant de jouer ; il apprend ensuite ce qu'il étudie.
+  final known = {'BRA', 'ARG', 'CHL', 'PER', 'COL'};
+  var mastery = Mastery.empty;
 
-  for (var i = 0; i < puzzles.length; i++) {
-    final puzzle = puzzles[i];
-    switch (puzzle) {
-      case FlashStudy(:final studySeconds, :final distractionSeconds):
-        print('Étude-éclair ${i + 1} : ${studySeconds}s d\'étude, ${distractionSeconds}s de distraction');
-      case DelayedRecall():
-        print('Bilan (rappel différé)');
+  for (var run = 1; run <= 2; run++) {
+    print('════ Partie $run (niveau $levelNumber, graine $seed) ════');
+    final history = <PlayedPuzzle>[];
+    while (true) {
+      final next = prepare(
+        PrepareCartographerRequest(baseMap: baseMap, level: level, profile: profile, language: NameLanguage.fr, mastery: mastery),
+        history,
+      );
+      if (next.isEmpty) break;
+      for (final puzzle in next) {
+        // Il retient ce qu'il étudie : il le saura au Rappel qui suit l'Étude.
+        if (puzzle is FlashStudy) known.addAll(puzzle.studiedItemIds);
+        final verdicts = [for (final q in puzzle.questions) known.contains(q.itemId) ? AnswerVerdict.exact : AnswerVerdict.wrong];
+        history.add(PlayedPuzzle(puzzle, verdicts));
+        _print(baseMap, puzzle, verdicts);
+      }
     }
-    for (final q in puzzle.questions) {
-      final item = baseMap.itemById(q.itemId);
-      final cue = q.kind.cue.isText ? '« ${item.textFor(q.kind.cue, puzzle.language)} »' : q.kind.cue.name;
-      final expected = q.kind.answer.isText ? item.textFor(q.kind.answer, puzzle.language) : 'position de ${item.names.fr}';
-      final aid = q.choices.isNotEmpty
-          ? '  choix : ${q.choices.join(' / ')}'
-          : (q.aid == RecallAid.firstLetter && q.kind.answer.isText ? '  indice : ${HintBuilder.firstLetter(expected)}' : '');
-      print('  ${q.kind.cue.name} -> ${q.kind.answer.name}  [$cue]  attendu : $expected$aid');
+    final result = score(history.expand((p) => p.outcomes).toList(), level: level);
+    print('Score ${result.score}, niveau franchi : ${result.levelCleared}, suggestion : ${result.suggestion.name}');
+    mastery = update(mastery, baseMap.id, history);
+    final counts = <Knowledge, int>{};
+    for (final k in mastery.states.values) {
+      counts[k] = (counts[k] ?? 0) + 1;
     }
-    print('');
+    print('Maîtrise : ${[for (final k in Knowledge.values) '${k.name} ${counts[k] ?? 0}'].join(', ')}\n');
   }
+}
+
+void _print(BaseMap baseMap, CartographerPuzzle puzzle, List<AnswerVerdict> verdicts) {
+  switch (puzzle) {
+    case Screening():
+      print('Repérage (${puzzle.questions.length} questions)');
+    case FlashStudy(:final studySeconds, :final distractionSeconds):
+      print('Étude-éclair : ${studySeconds}s d\'étude, ${distractionSeconds}s de distraction');
+    case DelayedRecall():
+      print('Bilan (rappel différé)');
+  }
+  for (var i = 0; i < puzzle.questions.length; i++) {
+    final q = puzzle.questions[i];
+    final item = baseMap.itemById(q.itemId);
+    final mark = verdicts[i] == AnswerVerdict.exact ? '✓' : '✗';
+    print('  $mark ${item.names.fr.padRight(10)} ${q.kind.cue.name} -> ${q.kind.answer.name}');
+  }
+  print('');
 }

@@ -5,8 +5,8 @@ import '../audio/game_sounds.dart';
 import 'cartographer_map_view.dart';
 
 /// Entraînement au Geste Placer, sans Étude ni Distraction : on donne le nom d'un pays, le
-/// joueur le touche sur la carte. Sert à valider le toucher sur un vrai téléphone avant de
-/// construire l'Étude-éclair complète. Les questions viennent du domaine ; l'évaluation et
+/// joueur le touche sur la carte. C'est la forme du Repérage (première manche d'une Partie) ;
+/// sert à valider le toucher sur un vrai téléphone avant de construire l'Étude-éclair complète. Les questions viennent du domaine ; l'évaluation et
 /// le Score aussi.
 class CartographerPlaceScreen extends StatefulWidget {
   final cartographer.BaseMap baseMap;
@@ -55,7 +55,7 @@ class _CartographerPlaceScreenState extends State<CartographerPlaceScreen> {
     setState(() {
       _tap = point;
       _verdict = evaluation.verdict;
-      _outcomes.add(cartographer.QuestionOutcome(evaluation.verdict, delayed: false));
+      _outcomes.add(cartographer.QuestionOutcome(evaluation.verdict, phase: cartographer.PuzzlePhase.screening));
     });
   }
 

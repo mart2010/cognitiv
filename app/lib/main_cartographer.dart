@@ -19,18 +19,19 @@ Future<void> main() async {
   runApp(CartographerPlaceApp(baseMap: baseMap, sounds: AudioPlayersGameSounds()));
 }
 
-/// Les questions d'entraînement viennent du domaine : profil réduit à « nom → position »,
-/// puis les questions des Études-éclair mises bout à bout (le Bilan n'a pas de sens ici).
+/// Les questions d'entraînement sont celles du Repérage du domaine (une par pays), avec un profil
+/// réduit à « nom → position » et sans Maîtrise : la suite d'une Partie n'est pas encore branchée.
 List<cartographer.RecallQuestion> placeQuestions(cartographer.BaseMap baseMap, cartographer.CartographerLevel level, [int? seed]) {
-  final puzzles = cartographer.GenerateCartographerPuzzles(random: cartographer.SystemRandomSource(seed)).call(
-    cartographer.GenerateCartographerRequest(
+  final puzzles = cartographer.PrepareCartographerPuzzles(random: cartographer.SystemRandomSource(seed)).call(
+    cartographer.PrepareCartographerRequest(
       baseMap: baseMap,
       level: level,
       profile: cartographer.CartographerProfile({const cartographer.LinkKind(cartographer.Facet.name, cartographer.Facet.position)}),
       language: cartographer.NameLanguage.fr,
     ),
+    const [],
   );
-  return [for (final puzzle in puzzles.whereType<cartographer.FlashStudy>()) ...puzzle.questions];
+  return puzzles.single.questions;
 }
 
 class CartographerPlaceApp extends StatelessWidget {
