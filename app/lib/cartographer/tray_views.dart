@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:cartographer/cartographer.dart' as cartographer;
 import 'package:flutter/material.dart';
 
@@ -117,10 +119,44 @@ class _TrayRecallViewState extends State<TrayRecallView> {
 
   String _name(int index) => widget.baseMap.itemById(_questions[index].itemId).names.of(widget.language);
 
-  void _place(cartographer.GeoPoint point) {
+  /// Les points candidats d'un Plateau de Points : les vraies positions et les points bidon,
+  /// mêlés. Vide pour un Plateau libre, où le joueur touche la carte où il veut.
+  late final List<cartographer.GeoPoint> _candidates = _buildCandidates();
+
+  List<cartographer.GeoPoint> _buildCandidates() {
+    if (widget.tray.decoys.isEmpty) return const [];
+    return [
+      for (final q in _questions) widget.baseMap.itemById(q.itemId).geometry.anchor,
+      ...widget.tray.decoys,
+    ];
+  }
+
+  /// Le candidat le plus proche du toucher, s'il est assez près pour avoir été visé.
+  cartographer.GeoPoint? _nearestCandidate(cartographer.GeoPoint tap) {
+    final frame = widget.baseMap.frame;
+    final reach = (frame.width > frame.height ? frame.width : frame.height) * 0.05;
+    cartographer.GeoPoint? best;
+    var bestDistance = reach;
+    for (final c in _candidates) {
+      final d = math.sqrt(math.pow(c.lon - tap.lon, 2) + math.pow(c.lat - tap.lat, 2));
+      if (d <= bestDistance) {
+        best = c;
+        bestDistance = d;
+      }
+    }
+    return best;
+  }
+
+  void _place(cartographer.GeoPoint tapped) {
     if (_revealed) return;
+    final point = _candidates.isEmpty ? tapped : _nearestCandidate(tapped);
+    if (point == null) return;
     widget.sounds.tap();
     setState(() {
+      // Un candidat ne porte qu'un nom : le choisir pour un autre nom libère le précédent.
+      if (_candidates.isNotEmpty) {
+        _placements.removeWhere((index, placed) => index != _selected && placed == point);
+      }
       _placements[_selected] = point;
       // Le nom suivant à placer : le prochain sans repère, en repartant du début si besoin.
       for (var step = 1; step <= _questions.length; step++) {
@@ -182,6 +218,7 @@ class _TrayRecallViewState extends State<TrayRecallView> {
             child: CartographerMapView(
               baseMap: widget.baseMap,
               markers: _markers(theme.colorScheme),
+              candidates: evaluations == null ? _candidates : const [],
               fills: evaluations == null
                   ? const {}
                   : {for (var i = 0; i < ids.length; i++) ids[i]: verdictColor(evaluations[i].verdict).withValues(alpha: 0.75)},
@@ -213,7 +250,9 @@ class _TrayRecallViewState extends State<TrayRecallView> {
           Text(
             _allPlaced
                 ? 'Tout est placé. Vous pouvez encore déplacer un repère.'
-                : 'Choisissez un nom, puis touchez la carte. Pincez pour zoomer.',
+                : _candidates.isEmpty
+                    ? 'Choisissez un nom, puis touchez la carte. Pincez pour zoomer.'
+                    : 'Choisissez un nom, puis touchez un point de la carte. Pincez pour zoomer.',
             key: const Key('tray-hint'),
             textAlign: TextAlign.center,
             style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),

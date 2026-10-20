@@ -201,4 +201,23 @@ void main() {
       expect(trays.first.questions.map((q) => second.of(map.id, q.itemId, kind)).toSet(), {Knowledge.solid});
     });
   });
+
+  test('un Plateau de villes porte des points bidon, de plus en plus nombreux avec le Niveau', () {
+    for (final number in [1, 5, 10]) {
+      final trays = prepare(2, request(level: number)).cast<Tray>();
+      expect(trays, everyElement(isA<Tray>().having((t) => t.decoys.length, 'points bidon', CartographerLevels.byNumber(number).trayDecoys)));
+    }
+    expect(CartographerLevels.byNumber(10).trayDecoys, greaterThan(CartographerLevels.byNumber(1).trayDecoys));
+  });
+
+  test('un Plateau de pays n\'a pas de point bidon : on touche la Scène librement', () {
+    final trays = prepare(2, request(categories: {Category.countries}));
+    expect(trays.cast<Tray>(), everyElement(isA<Tray>().having((t) => t.decoys, 'points bidon', isEmpty)));
+  });
+
+  test('les points bidon survivent à la sérialisation', () {
+    final tray = prepare(3, request()).first as Tray;
+    final back = CartographerPuzzleCodec.fromJson(jsonDecode(jsonEncode(tray.toJson())) as Map<String, dynamic>) as Tray;
+    expect(back.decoys, tray.decoys);
+  });
 }

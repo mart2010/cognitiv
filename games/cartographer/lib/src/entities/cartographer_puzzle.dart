@@ -1,3 +1,4 @@
+import 'geo_point.dart';
 import 'name_language.dart';
 import 'recall_question.dart';
 
@@ -49,12 +50,19 @@ final class FlashStudy extends StudyPuzzle {
 /// Plateau (`games/cartographer/CONTEXT.md`) : N Éléments d'une même Catégorie sont montrés
 /// ensemble, nommés, puis le joueur les replace tous sur la Scène, dans l'ordre qu'il veut, et ne
 /// voit les verdicts qu'après les avoir tous placés. Chaque question est un Lien « nom → position ».
+///
+/// Pour un Plateau de Points (villes), `decoys` sont des points bidon : avec les vraies positions,
+/// ils forment les points candidats parmi lesquels le joueur choisit. Vide pour les autres
+/// Géométries, où le joueur touche librement la Scène.
 final class Tray extends StudyPuzzle {
+  final List<GeoPoint> decoys;
+
   const Tray({
     required super.language,
     required super.questions,
     required super.studySeconds,
     required super.distractionSeconds,
+    this.decoys = const [],
   });
 }
 

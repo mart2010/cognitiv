@@ -1,5 +1,7 @@
+import '../domain_services/decoy_placer.dart';
 import '../entities/cartographer_puzzle.dart';
 import '../entities/facet.dart';
+import '../entities/geometry.dart';
 import '../entities/item.dart';
 import '../entities/knowledge.dart';
 import '../entities/link.dart';
@@ -59,6 +61,10 @@ class PrepareTrayPuzzles implements PuzzlePreparer {
             for (final item in _shuffled(chosen))
               RecallQuestion(itemId: item.id, kind: linkKind, aid: RecallAid.free),
           ],
+          // Des points candidats seulement quand les Éléments sont des Points (villes).
+          decoys: chosen.every((item) => item.geometry is PointGeometry)
+              ? DecoyPlacer(random).place(baseMap, chosen, request.level.trayDecoys)
+              : const [],
         ),
       );
     }

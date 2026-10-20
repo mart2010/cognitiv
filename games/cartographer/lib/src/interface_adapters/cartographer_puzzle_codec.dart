@@ -1,5 +1,6 @@
 import '../entities/cartographer_puzzle.dart';
 import '../entities/facet.dart';
+import '../entities/geo_point.dart';
 import '../entities/link.dart';
 import '../entities/name_language.dart';
 import '../entities/recall_aid.dart';
@@ -32,11 +33,12 @@ extension CartographerPuzzleJsonEncoding on CartographerPuzzle {
             'distractionSeconds': distractionSeconds,
             'questions': [for (final q in questions) q.toJson()],
           },
-        Tray(:final language, :final questions, :final studySeconds, :final distractionSeconds) => {
+        Tray(:final language, :final questions, :final studySeconds, :final distractionSeconds, :final decoys) => {
             'type': 'tray',
             'language': language.name,
             'studySeconds': studySeconds,
             'distractionSeconds': distractionSeconds,
+            'decoys': [for (final d in decoys) [d.lon, d.lat]],
             'questions': [for (final q in questions) q.toJson()],
           },
         DelayedRecall(:final language, :final questions) => {
@@ -72,6 +74,10 @@ class CartographerPuzzleCodec {
           questions: questions,
           studySeconds: json['studySeconds'] as int,
           distractionSeconds: json['distractionSeconds'] as int,
+          decoys: [
+            for (final d in (json['decoys'] as List? ?? const []))
+              GeoPoint(((d as List)[0] as num).toDouble(), (d[1] as num).toDouble()),
+          ],
         ),
       'screening' => Screening(language: language, questions: questions),
       'delayedRecall' => DelayedRecall(language: language, questions: questions),

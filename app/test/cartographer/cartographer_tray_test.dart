@@ -3,6 +3,7 @@ import 'package:cognitiv_app/cartographer/cartographer_home_screen.dart';
 import 'package:cognitiv_app/cartographer/cartographer_map_view.dart';
 import 'package:cognitiv_app/cartographer/cartographer_run.dart';
 import 'package:cognitiv_app/cartographer/cartographer_run_screen.dart';
+import 'package:cognitiv_app/cartographer/map_projection.dart';
 import 'package:cognitiv_app/cartographer/tray_views.dart';
 import 'package:cognitiv_app/cartographer/verdict_colors.dart';
 import 'package:flutter/material.dart';
@@ -276,6 +277,103 @@ void main() {
       expect(sounds.events.last, 'failure');
       await tester.tap(find.byKey(const Key('next')));
       expect(nexts, 1);
+    });
+  });
+
+  group('les points candidats', () {
+    // Deux points bidon à l'écart des trois villes.
+    const decoyA = cartographer.GeoPoint(-60, -10);
+    const decoyB = cartographer.GeoPoint(-66, -28);
+    final tray = cartographer.Tray(
+      language: cartographer.NameLanguage.fr,
+      studySeconds: 10,
+      distractionSeconds: 5,
+      questions: [
+        for (final id in ['city:lima', 'city:bogota', 'city:santiago'])
+          cartographer.RecallQuestion(itemId: id, kind: cartographer.PrepareTrayPuzzles.linkKind, aid: cartographer.RecallAid.free),
+      ],
+      decoys: const [decoyA, decoyB],
+    );
+    final evaluate = cartographer.EvaluateCartographerAnswer();
+
+    late List<cartographer.CartographerAnswer> submitted;
+
+    Future<void> pumpTray(WidgetTester tester) async {
+      submitted = [];
+      usePixel(tester);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SafeArea(
+              child: TrayRecallView(
+                baseMap: map,
+                tray: tray,
+                header: 'Plateau 1 sur 3 · Rappel',
+                onSubmit: (answers) {
+                  submitted = answers;
+                  return [for (var i = 0; i < answers.length; i++) evaluate(map, tray.questions[i], answers[i])];
+                },
+                onNext: () {},
+                sounds: RecordingSounds(),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    CartographerMapView mapView(WidgetTester tester) => tester.widget<CartographerMapView>(find.byType(CartographerMapView));
+
+    Future<void> tapGeo(WidgetTester tester, cartographer.GeoPoint point) async {
+      final finder = find.byKey(const Key('cartographer-map'));
+      final projection = MapProjection(map.frame, tester.getSize(finder));
+      await tester.tapAt(tester.getTopLeft(finder) + projection.toCanvas(point));
+      await tester.pump();
+    }
+
+    testWidgets('la carte montre les vraies positions et les points bidon, sans les distinguer', (tester) async {
+      await pumpTray(tester);
+      final candidates = mapView(tester).candidates;
+      expect(candidates, hasLength(5));
+      expect(candidates, containsAll([decoyA, decoyB, map.itemById('city:lima').anchor]));
+      expect(find.textContaining('touchez un point'), findsOneWidget);
+    });
+
+    testWidgets('un toucher dans le vide ne pose rien ; près d\'un candidat, le repère se pose dessus', (tester) async {
+      await pumpTray(tester);
+      await tapOcean(tester, map);
+      expect(mapView(tester).markers, isEmpty);
+      final nearLima = cartographer.GeoPoint(map.itemById('city:lima').anchor.lon + 0.4, map.itemById('city:lima').anchor.lat);
+      await tapGeo(tester, nearLima);
+      expect(mapView(tester).markers.single.point, map.itemById('city:lima').anchor);
+    });
+
+    testWidgets('choisir un point bidon donne un verdict faux', (tester) async {
+      await pumpTray(tester);
+      await tapGeo(tester, decoyA); // Lima
+      await tapMapOn(tester, map, 'city:bogota');
+      await tapMapOn(tester, map, 'city:santiago');
+      await tester.tap(find.byKey(const Key('tray-submit')));
+      await tester.pump();
+      expect(find.text('2 sur 3 exactes'), findsOneWidget);
+      expect((submitted.first as cartographer.PlacedAnswer).point, decoyA);
+    });
+
+    testWidgets('un candidat ne porte qu\'un nom : le reprendre libère le premier', (tester) async {
+      await pumpTray(tester);
+      await tapMapOn(tester, map, 'city:lima'); // nom 1, puis le nom 2 devient le choix
+      await tapMapOn(tester, map, 'city:lima'); // nom 2 prend le même point
+      expect(mapView(tester).markers.map((m) => m.text), ['2']);
+    });
+
+    testWidgets('après « Valider », les candidats disparaissent', (tester) async {
+      await pumpTray(tester);
+      await tapMapOn(tester, map, 'city:lima');
+      await tapMapOn(tester, map, 'city:bogota');
+      await tapMapOn(tester, map, 'city:santiago');
+      await tester.tap(find.byKey(const Key('tray-submit')));
+      await tester.pump();
+      expect(mapView(tester).candidates, isEmpty);
     });
   });
 

@@ -23,6 +23,7 @@ export 'src/entities/recall_aid.dart';
 export 'src/entities/recall_question.dart';
 export 'src/entities/trial.dart';
 
+export 'src/domain_services/decoy_placer.dart';
 export 'src/domain_services/hint_builder.dart';
 export 'src/domain_services/placement_judge.dart';
 export 'src/domain_services/text_matcher.dart';

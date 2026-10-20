@@ -34,7 +34,7 @@ class PlacementJudge {
   double get pointCloseDistanceKm => _frameKm * pointCloseFraction;
 
   AnswerVerdict judge(Item item, GeoPoint tap) => switch (item.geometry) {
-        AreaGeometry(:final polygons) when polygons.any((polygon) => _inside(polygon, tap)) => AnswerVerdict.exact,
+        AreaGeometry(:final polygons) when polygons.any((polygon) => insidePolygon(polygon, tap)) => AnswerVerdict.exact,
         AreaGeometry() => distanceKm(item, tap) <= closeDistanceKm ? AnswerVerdict.close : AnswerVerdict.wrong,
         PointGeometry() || LineGeometry() => _byDistance(distanceKm(item, tap)),
       };
@@ -74,7 +74,8 @@ class PlacementJudge {
     return best;
   }
 
-  static bool _inside(Polygon polygon, GeoPoint p) =>
+  /// Le point est-il dans le Polygone (son anneau extérieur, hors trous) ?
+  static bool insidePolygon(Polygon polygon, GeoPoint p) =>
       _inRing(polygon.first, p) && !polygon.skip(1).any((hole) => _inRing(hole, p));
 
   /// Lancer de rayon : le point est dedans si un rayon vers l'est coupe un nombre impair

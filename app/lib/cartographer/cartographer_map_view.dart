@@ -50,6 +50,10 @@ class CartographerMapView extends StatefulWidget {
   /// Repères numérotés posés par le joueur (les villes d'un Plateau qu'il a placées).
   final List<MapMarker> markers;
 
+  /// Points candidats d'un Plateau de Points : de petits ronds neutres, tous pareils, parmi
+  /// lesquels le joueur choisit sans savoir lesquels sont vrais.
+  final List<cartographer.GeoPoint> candidates;
+
   final cartographer.NameLanguage language;
   final ValueChanged<cartographer.GeoPoint>? onTap;
 
@@ -62,6 +66,7 @@ class CartographerMapView extends StatefulWidget {
     this.focus,
     this.marker,
     this.markers = const [],
+    this.candidates = const [],
     this.language = cartographer.NameLanguage.fr,
     this.onTap,
   });
@@ -125,6 +130,7 @@ class _CartographerMapViewState extends State<CartographerMapView> {
                   focus: widget.focus,
                   marker: widget.marker,
                   markers: widget.markers,
+                  candidates: widget.candidates,
                   language: widget.language,
                   tints: {for (final entry in _tints.entries) entry.key: palette[entry.value]},
                   border: scheme.outline,
@@ -150,6 +156,7 @@ class _MapPainter extends CustomPainter {
   final Set<String>? focus;
   final cartographer.GeoPoint? marker;
   final List<MapMarker> markers;
+  final List<cartographer.GeoPoint> candidates;
   final cartographer.NameLanguage language;
   final Map<String, Color> tints;
   final Color border;
@@ -166,6 +173,7 @@ class _MapPainter extends CustomPainter {
     required this.focus,
     required this.marker,
     required this.markers,
+    required this.candidates,
     required this.language,
     required this.tints,
     required this.border,
@@ -215,11 +223,22 @@ class _MapPainter extends CustomPainter {
     }
     _paintPoints(canvas);
     _paintLabels(canvas, size);
+    _paintCandidates(canvas);
     _paintMarkers(canvas);
     if (marker != null) {
       final center = projection.toCanvas(marker!);
       canvas.drawCircle(center, 7, Paint()..color = markerColor.withValues(alpha: 0.25));
       canvas.drawCircle(center, 3.5, Paint()..color = markerColor);
+    }
+  }
+
+  static const _candidateRadius = 6.0;
+
+  void _paintCandidates(Canvas canvas) {
+    for (final point in candidates) {
+      final center = projection.toCanvas(point);
+      canvas.drawCircle(center, _candidateRadius + 1.5, Paint()..color = sea);
+      canvas.drawCircle(center, _candidateRadius, Paint()..color = markerColor.withValues(alpha: 0.75));
     }
   }
 
@@ -323,6 +342,7 @@ class _MapPainter extends CustomPainter {
       old.labels != labels ||
       old.marker != marker ||
       !listEquals(old.markers, markers) ||
+      !listEquals(old.candidates, candidates) ||
       !mapEquals(old.tints, tints) ||
       !mapEquals(old.fills, fills) ||
       old.border != border ||
