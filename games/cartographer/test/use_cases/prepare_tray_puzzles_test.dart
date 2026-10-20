@@ -202,12 +202,12 @@ void main() {
     });
   });
 
-  test('un Plateau de villes porte des points bidon, de plus en plus nombreux avec le Niveau', () {
+  test('un Plateau de villes porte autant de points bidon que de vraies villes, à tout Niveau', () {
     for (final number in [1, 5, 10]) {
-      final trays = prepare(2, request(level: number)).cast<Tray>();
-      expect(trays, everyElement(isA<Tray>().having((t) => t.decoys.length, 'points bidon', CartographerLevels.byNumber(number).trayDecoys)));
+      for (final tray in prepare(2, request(level: number)).cast<Tray>()) {
+        expect(tray.decoys, hasLength(tray.questions.length));
+      }
     }
-    expect(CartographerLevels.byNumber(10).trayDecoys, greaterThan(CartographerLevels.byNumber(1).trayDecoys));
   });
 
   test('un Plateau de pays n\'a pas de point bidon : on touche la Scène librement', () {

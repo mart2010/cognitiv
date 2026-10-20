@@ -63,7 +63,7 @@ class PrepareTrayPuzzles implements PuzzlePreparer {
           ],
           // Des points candidats seulement quand les Éléments sont des Points (villes).
           decoys: chosen.every((item) => item.geometry is PointGeometry)
-              ? DecoyPlacer(random).place(baseMap, chosen, request.level.trayDecoys)
+              ? DecoyPlacer(random).place(baseMap, chosen, request.level.decoysFor(chosen.length))
               : const [],
         ),
       );

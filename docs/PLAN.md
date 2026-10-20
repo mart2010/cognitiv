@@ -142,6 +142,8 @@ Le jeu doit combiner mémoire et savoir. Les Épreuves (Plateau, Séquence, Expl
   - Un Plateau ignore les genres de Lien du Profil (il ne pose que « placer ») : l'accueil les masque quand il est choisi.
   - **À juger au doigt** : taille des repères numérotés (rayon 11) quand 8 villes sont proches, effet de la page d'attente, Plateau de 8 aux Niveaux 9 et 10, ordre de saisie.
   - L'Étude-éclair avec Repérage existe toujours à côté : à retirer ou reprendre (ADR 0011) quand le Plateau et la Séquence auront fait leurs preuves.
+- [x] **Points candidats au Plateau de villes (fait 2026-10-20, essayé sur le Pixel).** Un Plateau de Points montre de petits ronds identiques, vrais et bidon mêlés ; le joueur choisit un nom puis un rond (le toucher se cale sur le plus proche, un rond ne porte qu'un nom), les ronds disparaissent après « Valider ». Les bidons (`DecoyPlacer`) viennent d'abord d'autres villes de la carte, puis de points tirés sur les terres, à 3,5 % du cadre les uns des autres. **Un bidon par vraie ville, à tous les Niveaux** : la difficulté monte avec le nombre de villes, pas avec la foule de points (24 points au Niveau 10 étaient déjà trop). Les Plateaux de pays gardent le toucher libre.
+- [ ] Retirer l'Étude-éclair (et le Repérage) une fois les autres Épreuves (Plateau successif, Séquence, Exploration) implémentées et essayées (ADR 0011).
 - [ ] Plateau en présentation successive (un Élément à la fois, puis tous replacés) comme réglage de l'Épreuve.
 - [ ] Épreuve Séquence (score = longueur atteinte), puis Exploration (budget de touches).
 - [ ] Reprendre `PrepareCartographerPuzzles`, le Score par phase et le Profil (Catégories) après le retrait du Repérage.
