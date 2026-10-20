@@ -8,3 +8,14 @@ enum Trial {
   /// Plateau : des Éléments montrés ensemble, puis tous replacés.
   tray,
 }
+
+/// Comment un Plateau montre ses Éléments pendant l'étude : un réglage de l'Épreuve, pas une
+/// Épreuve à part. Le Rappel est le même dans les deux cas.
+enum TrayPresentation {
+  /// Tous les Éléments à la fois, pendant la durée d'étude du Niveau.
+  together,
+
+  /// Un Élément à la fois, chacun un temps fixe (`PrepareTrayPuzzles.secondsPerItem`), puis il
+  /// disparaît quand le suivant arrive. Le joueur ne choisit pas son temps.
+  oneByOne,
+}

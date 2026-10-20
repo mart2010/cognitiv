@@ -5,6 +5,7 @@ import '../entities/link.dart';
 import '../entities/name_language.dart';
 import '../entities/recall_aid.dart';
 import '../entities/recall_question.dart';
+import '../entities/trial.dart';
 
 /// Traduit une Énigme vers une donnée sérialisable : une Partie stocke ses énigmes
 /// générées telles quelles, pas une graine (ADR 0002). Les Éléments ne sont référencés que
@@ -33,12 +34,13 @@ extension CartographerPuzzleJsonEncoding on CartographerPuzzle {
             'distractionSeconds': distractionSeconds,
             'questions': [for (final q in questions) q.toJson()],
           },
-        Tray(:final language, :final questions, :final studySeconds, :final distractionSeconds, :final decoys) => {
+        Tray(:final language, :final questions, :final studySeconds, :final distractionSeconds, :final decoys, :final presentation) => {
             'type': 'tray',
             'language': language.name,
             'studySeconds': studySeconds,
             'distractionSeconds': distractionSeconds,
             'decoys': [for (final d in decoys) [d.lon, d.lat]],
+            'presentation': presentation.name,
             'questions': [for (final q in questions) q.toJson()],
           },
         DelayedRecall(:final language, :final questions) => {
@@ -74,6 +76,7 @@ class CartographerPuzzleCodec {
           questions: questions,
           studySeconds: json['studySeconds'] as int,
           distractionSeconds: json['distractionSeconds'] as int,
+          presentation: TrayPresentation.values.byName(json['presentation'] as String? ?? 'together'),
           decoys: [
             for (final d in (json['decoys'] as List? ?? const []))
               GeoPoint(((d as List)[0] as num).toDouble(), (d[1] as num).toDouble()),

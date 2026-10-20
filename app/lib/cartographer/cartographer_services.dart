@@ -31,7 +31,11 @@ class CartographerServices {
 
   /// Une Partie neuve à ce Niveau, dans l'Épreuve choisie. La Maîtrise mise à jour est stockée à
   /// la fin, jamais en cas d'abandon.
-  CartographerRun newRun(cartographer.CartographerLevel level, [cartographer.Trial trial = cartographer.Trial.flashStudy]) =>
+  CartographerRun newRun(
+    cartographer.CartographerLevel level, [
+    cartographer.Trial trial = cartographer.Trial.flashStudy,
+    cartographer.TrayPresentation presentation = cartographer.TrayPresentation.together,
+  ]) =>
       CartographerRun(
         baseMap: baseMap,
         level: level,
@@ -40,7 +44,7 @@ class CartographerServices {
         masteryBefore: mastery.mastery,
         prepare: switch (trial) {
           cartographer.Trial.flashStudy => cartographer.PrepareCartographerPuzzles(random: randomFactory()),
-          cartographer.Trial.tray => cartographer.PrepareTrayPuzzles(random: randomFactory()),
+          cartographer.Trial.tray => cartographer.PrepareTrayPuzzles(random: randomFactory(), presentation: presentation),
         },
         onFinished: mastery.replace,
       );

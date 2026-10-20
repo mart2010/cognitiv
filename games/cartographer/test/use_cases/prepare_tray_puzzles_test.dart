@@ -220,4 +220,33 @@ void main() {
     final back = CartographerPuzzleCodec.fromJson(jsonDecode(jsonEncode(tray.toJson())) as Map<String, dynamic>) as Tray;
     expect(back.decoys, tray.decoys);
   });
+
+  test('la présentation successive donne 2 s par Élément, quelle que soit la durée du Niveau', () {
+    for (final number in [1, 6, 10]) {
+      final level = CartographerLevels.byNumber(number);
+      final trays = PrepareTrayPuzzles(random: SystemRandomSource(5), presentation: TrayPresentation.oneByOne)
+          .call(request(level: number), [])
+          .cast<Tray>();
+      for (final tray in trays) {
+        expect(tray.presentation, TrayPresentation.oneByOne);
+        expect(tray.studySeconds, tray.questions.length * PrepareTrayPuzzles.secondsPerItem);
+        expect(tray.distractionSeconds, level.distractionSeconds);
+      }
+    }
+  });
+
+  test('par défaut, tous les Éléments sont montrés ensemble pendant la durée du Niveau', () {
+    for (final tray in prepare(5, request(level: 6)).cast<Tray>()) {
+      expect(tray.presentation, TrayPresentation.together);
+      expect(tray.studySeconds, CartographerLevels.byNumber(6).studySeconds);
+    }
+  });
+
+  test('la présentation survit à la sérialisation, et un ancien Plateau se relit « ensemble »', () {
+    final tray = PrepareTrayPuzzles(random: SystemRandomSource(6), presentation: TrayPresentation.oneByOne).call(request(), []).first as Tray;
+    final json = jsonDecode(jsonEncode(tray.toJson())) as Map<String, dynamic>;
+    expect((CartographerPuzzleCodec.fromJson(json) as Tray).presentation, TrayPresentation.oneByOne);
+    json.remove('presentation');
+    expect((CartographerPuzzleCodec.fromJson(json) as Tray).presentation, TrayPresentation.together);
+  });
 }

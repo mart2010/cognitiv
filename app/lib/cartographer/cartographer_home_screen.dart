@@ -20,6 +20,7 @@ class CartographerHomeScreen extends StatefulWidget {
 class _CartographerHomeScreenState extends State<CartographerHomeScreen> {
   var _levelNumber = 3;
   var _trial = cartographer.Trial.flashStudy;
+  var _presentation = cartographer.TrayPresentation.together;
 
   @override
   void initState() {
@@ -41,6 +42,9 @@ class _CartographerHomeScreenState extends State<CartographerHomeScreen> {
       _ => 'lieux',
     };
     if (_trial == cartographer.Trial.tray) {
+      if (_presentation == cartographer.TrayPresentation.oneByOne) {
+        return '${level.itemCount} $what par plateau, un toutes les ${cartographer.PrepareTrayPuzzles.secondsPerItem} s, ${level.distractionSeconds} s d\'attente';
+      }
       return '${level.itemCount} $what par plateau, ${level.studySeconds} s pour les retenir, ${level.distractionSeconds} s d\'attente';
     }
     return '${level.itemCount} $what par étude, ${level.studySeconds} s pour les retenir, $aid';
@@ -114,7 +118,9 @@ class _CartographerHomeScreenState extends State<CartographerHomeScreen> {
                     const SizedBox(height: 8),
                     Text(
                       _trial == cartographer.Trial.tray
-                          ? 'Des repères montrés ensemble, puis tous à replacer.'
+                          ? (_presentation == cartographer.TrayPresentation.oneByOne
+                              ? 'Des repères montrés un à un, puis tous à replacer.'
+                              : 'Des repères montrés ensemble, puis tous à replacer.')
                           : 'Un repérage, puis l\'étude de ce qu\'on ne connaît pas.',
                       key: const Key('trial-summary'),
                       style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
@@ -145,6 +151,21 @@ class _CartographerHomeScreenState extends State<CartographerHomeScreen> {
                         value: profile.categories.contains(category),
                         onChanged: (on) => services.profile.setCategoryActive(category, on),
                       ),
+                    // Les réglages propres à l'Épreuve choisie ; d'autres viendront avec les autres Épreuves.
+                    if (_trial == cartographer.Trial.tray) ...[
+                      const SizedBox(height: 16),
+                      Text('Options', style: theme.textTheme.titleMedium),
+                      SwitchListTile(
+                        key: const Key('option-simultaneous'),
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text('Affichage en simultané'),
+                        subtitle: const Text('Sinon, les repères sont montrés un à un.'),
+                        value: _presentation == cartographer.TrayPresentation.together,
+                        onChanged: (on) => setState(
+                          () => _presentation = on ? cartographer.TrayPresentation.together : cartographer.TrayPresentation.oneByOne,
+                        ),
+                      ),
+                    ],
                     // Un Plateau pose toujours « placer », sans genre de Lien à choisir.
                     if (_trial == cartographer.Trial.flashStudy) ...[
                       const SizedBox(height: 16),
@@ -183,7 +204,7 @@ class _CartographerHomeScreenState extends State<CartographerHomeScreen> {
                         key: const Key('start'),
                         onPressed: canPlay
                             ? () => Navigator.of(context).push(
-                                MaterialPageRoute<void>(builder: (_) => CartographerRunScreen(services: services, level: _level, trial: _trial)),
+                                MaterialPageRoute<void>(builder: (_) => CartographerRunScreen(services: services, level: _level, trial: _trial, presentation: _presentation)),
                               )
                             : null,
                         child: const Text('Jouer'),

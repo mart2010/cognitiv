@@ -8,6 +8,7 @@ import '../entities/link.dart';
 import '../entities/played_puzzle.dart';
 import '../entities/recall_aid.dart';
 import '../entities/recall_question.dart';
+import '../entities/trial.dart';
 import 'ports/random_source.dart';
 import 'puzzle_preparer.dart';
 
@@ -23,9 +24,13 @@ class PrepareTrayPuzzles implements PuzzlePreparer {
   static const trayCount = 3;
   static const linkKind = LinkKind(Facet.name, Facet.position);
 
-  final RandomSource random;
+  /// Temps montré à chaque Élément en présentation successive.
+  static const secondsPerItem = 2;
 
-  PrepareTrayPuzzles({required this.random});
+  final RandomSource random;
+  final TrayPresentation presentation;
+
+  PrepareTrayPuzzles({required this.random, this.presentation = TrayPresentation.together});
 
   @override
   List<CartographerPuzzle> call(PrepareCartographerRequest request, List<PlayedPuzzle> history) {
@@ -55,7 +60,8 @@ class PrepareTrayPuzzles implements PuzzlePreparer {
       trays.add(
         Tray(
           language: request.language,
-          studySeconds: request.level.studySeconds,
+          presentation: presentation,
+          studySeconds: presentation == TrayPresentation.oneByOne ? chosen.length * secondsPerItem : request.level.studySeconds,
           distractionSeconds: request.level.distractionSeconds,
           questions: [
             for (final item in _shuffled(chosen))

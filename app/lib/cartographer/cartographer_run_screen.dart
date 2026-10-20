@@ -16,15 +16,18 @@ class CartographerRunScreen extends StatefulWidget {
   final CartographerServices services;
   final cartographer.CartographerLevel level;
   final cartographer.Trial trial;
+  final cartographer.TrayPresentation presentation;
 
-  const CartographerRunScreen({super.key, required this.services, required this.level, this.trial = cartographer.Trial.flashStudy});
+  const CartographerRunScreen({super.key, required this.services, required this.level, this.trial = cartographer.Trial.flashStudy,
+    this.presentation = cartographer.TrayPresentation.together,
+  });
 
   @override
   State<CartographerRunScreen> createState() => _CartographerRunScreenState();
 }
 
 class _CartographerRunScreenState extends State<CartographerRunScreen> {
-  late CartographerRun _run = widget.services.newRun(widget.level, widget.trial);
+  late CartographerRun _run = widget.services.newRun(widget.level, widget.trial, widget.presentation);
 
   @override
   void dispose() {
@@ -34,7 +37,7 @@ class _CartographerRunScreenState extends State<CartographerRunScreen> {
 
   void _replay() {
     final old = _run;
-    setState(() => _run = widget.services.newRun(widget.level, widget.trial));
+    setState(() => _run = widget.services.newRun(widget.level, widget.trial, widget.presentation));
     old.dispose();
   }
 

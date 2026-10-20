@@ -1,5 +1,6 @@
 import 'geo_point.dart';
 import 'name_language.dart';
+import 'trial.dart';
 import 'recall_question.dart';
 
 /// Énigme du Cartographe (`platform/CONTEXT.md`) : le Repérage, une Étude-éclair, un Plateau, ou le Bilan
@@ -56,6 +57,7 @@ final class FlashStudy extends StudyPuzzle {
 /// Géométries, où le joueur touche librement la Scène.
 final class Tray extends StudyPuzzle {
   final List<GeoPoint> decoys;
+  final TrayPresentation presentation;
 
   const Tray({
     required super.language,
@@ -63,6 +65,7 @@ final class Tray extends StudyPuzzle {
     required super.studySeconds,
     required super.distractionSeconds,
     this.decoys = const [],
+    this.presentation = TrayPresentation.together,
   });
 }
 

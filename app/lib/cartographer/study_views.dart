@@ -16,6 +16,8 @@ class StudyIntroView extends StatelessWidget {
 
   const StudyIntroView({super.key, required this.study, required this.header, required this.onStart, this.title, this.note});
 
+  bool get _oneByOne => isOneByOne(study);
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -37,7 +39,9 @@ class StudyIntroView extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Vous aurez ${study.studySeconds} secondes.',
+                  _oneByOne
+                      ? 'Un à un, ${cartographer.PrepareTrayPuzzles.secondsPerItem} secondes chacun.'
+                      : 'Vous aurez ${study.studySeconds} secondes.',
                   style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                 ),
                 if (note != null) ...[
@@ -58,6 +62,10 @@ class StudyIntroView extends StatelessWidget {
     );
   }
 }
+
+/// Un Plateau montré un Élément à la fois ?
+bool isOneByOne(cartographer.StudyPuzzle study) =>
+    study is cartographer.Tray && study.presentation == cartographer.TrayPresentation.oneByOne;
 
 /// L'étude chronométrée : les pays à retenir sont colorés et nommés sur la carte, les autres mis en
 /// retrait, et une barre fine se vide. Finir plus tôt est permis (« Prêt ») et ne rapporte rien.
@@ -108,6 +116,9 @@ class _StudyViewState extends State<StudyView> with SingleTickerProviderStateMix
     super.dispose();
   }
 
+  /// L'Élément montré en ce moment en présentation successive, selon le temps écoulé.
+  int _currentIndex(int count) => (_controller.value * count).floor().clamp(0, count - 1);
+
   /// Le nom, et la capitale sur une seconde ligne quand le Lien l'utilise.
   Map<String, String> get _labelTexts {
     final texts = <String, String>{};
@@ -124,6 +135,7 @@ class _StudyViewState extends State<StudyView> with SingleTickerProviderStateMix
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final ids = widget.study.studiedItemIds;
+    final oneByOne = isOneByOne(widget.study);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -140,17 +152,35 @@ class _StudyViewState extends State<StudyView> with SingleTickerProviderStateMix
         Expanded(
           child: Card(
             clipBehavior: Clip.antiAlias,
-            child: CartographerMapView(
-              baseMap: widget.baseMap,
-              focus: ids.toSet(),
-              labels: ids.toSet(),
-              labelTexts: _labelTexts,
-              language: widget.language,
+            // En présentation successive, seul l'Élément du moment est mis en avant et nommé.
+            child: AnimatedBuilder(
+              animation: _controller,
+              builder: (context, _) {
+                final shown = oneByOne ? {ids[_currentIndex(ids.length)]} : ids.toSet();
+                return CartographerMapView(
+                  baseMap: widget.baseMap,
+                  focus: shown,
+                  labels: shown,
+                  labelTexts: _labelTexts,
+                  language: widget.language,
+                );
+              },
             ),
           ),
         ),
         const SizedBox(height: 12),
-        FilledButton(key: const Key('study-ready'), onPressed: _finish, child: const Text('Prêt')),
+        if (oneByOne)
+          AnimatedBuilder(
+            animation: _controller,
+            builder: (context, _) => Text(
+              '${_currentIndex(ids.length) + 1} sur ${ids.length}',
+              key: const Key('study-counter'),
+              textAlign: TextAlign.center,
+              style: theme.textTheme.titleMedium,
+            ),
+          )
+        else
+          FilledButton(key: const Key('study-ready'), onPressed: _finish, child: const Text('Prêt')),
       ],
     );
   }

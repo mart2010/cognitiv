@@ -4,6 +4,7 @@ import 'package:cognitiv_app/cartographer/cartographer_map_view.dart';
 import 'package:cognitiv_app/cartographer/cartographer_run.dart';
 import 'package:cognitiv_app/cartographer/cartographer_run_screen.dart';
 import 'package:cognitiv_app/cartographer/map_projection.dart';
+import 'package:cognitiv_app/cartographer/study_views.dart';
 import 'package:cognitiv_app/cartographer/tray_views.dart';
 import 'package:cognitiv_app/cartographer/verdict_colors.dart';
 import 'package:flutter/material.dart';
@@ -374,6 +375,95 @@ void main() {
       await tester.tap(find.byKey(const Key('tray-submit')));
       await tester.pump();
       expect(mapView(tester).candidates, isEmpty);
+    });
+  });
+
+  group('la présentation successive', () {
+    final tray = cartographer.Tray(
+      language: cartographer.NameLanguage.fr,
+      studySeconds: 6,
+      distractionSeconds: 5,
+      presentation: cartographer.TrayPresentation.oneByOne,
+      questions: [
+        for (final id in ['city:lima', 'city:bogota', 'city:santiago'])
+          cartographer.RecallQuestion(itemId: id, kind: cartographer.PrepareTrayPuzzles.linkKind, aid: cartographer.RecallAid.free),
+      ],
+    );
+
+    testWidgets('un Élément à la fois, 2 s chacun, sans bouton « Prêt »', (tester) async {
+      usePixel(tester);
+      var done = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: StudyView(baseMap: map, study: tray, header: 'Plateau 1 sur 3', onDone: () => done++),
+          ),
+        ),
+      );
+      CartographerMapView view() => tester.widget<CartographerMapView>(find.byType(CartographerMapView));
+      expect(find.byKey(const Key('study-ready')), findsNothing);
+      expect(view().labels, {'city:lima'});
+      expect(find.text('1 sur 3'), findsOneWidget);
+      await tester.pump(const Duration(milliseconds: 2100));
+      expect(view().labels, {'city:bogota'});
+      expect(view().focus, {'city:bogota'});
+      expect(find.text('2 sur 3'), findsOneWidget);
+      await tester.pump(const Duration(seconds: 2));
+      expect(view().labels, {'city:santiago'});
+      expect(done, 0);
+      await tester.pump(const Duration(seconds: 2));
+      expect(done, 1);
+    });
+
+    testWidgets('l\'annonce dit un à un, 2 secondes chacun', (tester) async {
+      usePixel(tester);
+      await tester.pumpWidget(
+        MaterialApp(home: Scaffold(body: StudyIntroView(study: tray, header: 'Plateau 1 sur 3', onStart: () {}))),
+      );
+      expect(find.text('Un à un, 2 secondes chacun.'), findsOneWidget);
+    });
+
+    testWidgets('à l\'accueil, l\'option n\'apparaît que pour le Plateau, en simultané par défaut', (tester) async {
+      final services = newServices(profile: citiesProfile);
+      await services.load();
+      usePixel(tester);
+      await tester.pumpWidget(MaterialApp(home: CartographerHomeScreen(services: services)));
+      await tester.pump();
+      expect(find.byKey(const Key('option-simultaneous')), findsNothing);
+      await tester.tap(find.text('Plateau'));
+      await tester.pump();
+      final option = find.byKey(const Key('option-simultaneous'));
+      await tester.scrollUntilVisible(option, 100, scrollable: find.byType(Scrollable).first);
+      expect(tester.widget<SwitchListTile>(option).value, isTrue);
+      await tester.tap(option);
+      await tester.pump();
+      expect(tester.widget<SwitchListTile>(option).value, isFalse);
+      expect(find.textContaining('un toutes les 2 s'), findsOneWidget);
+    });
+
+    testWidgets('une Partie en présentation successive se joue jusqu\'au Rappel', (tester) async {
+      final services = newServices(profile: citiesProfile);
+      await services.load();
+      usePixel(tester);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: CartographerRunScreen(
+            services: services,
+            level: _level3,
+            trial: cartographer.Trial.tray,
+            presentation: cartographer.TrayPresentation.oneByOne,
+          ),
+        ),
+      );
+      await tester.tap(find.byKey(const Key('start-study')));
+      await tester.pump();
+      expect(find.byKey(const Key('study-counter')), findsOneWidget);
+      await tester.pump(const Duration(seconds: 9)); // 4 villes × 2 s
+      await tester.pump();
+      expect(find.byKey(const Key('wait-text')), findsOneWidget);
+      await tester.pump(Duration(seconds: _level3.distractionSeconds + 1));
+      await tester.pump();
+      expect(find.byKey(const Key('tray-submit')), findsOneWidget);
     });
   });
 
