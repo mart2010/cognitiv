@@ -13,6 +13,10 @@ class CartographerLevel {
   final int distractionSeconds;
   final RecallAid aid;
 
+  /// Temps pendant lequel chaque Élément d'une Séquence est surligné : la difficulté d'une Séquence
+  /// monte avec la vitesse du visionnage, pas avec la taille du jeu.
+  final int sequenceStepMillis;
+
   /// Nombre maximal d'Études-éclair d'une Partie ; les ratés du Repérage au-delà restent de
   /// côté, une Partie ne devient jamais interminable.
   final int maxStudyCycles;
@@ -26,6 +30,7 @@ class CartographerLevel {
     required this.studySeconds,
     required this.distractionSeconds,
     required this.aid,
+    this.sequenceStepMillis = 1000,
     this.maxStudyCycles = 2,
     this.delayedRecallCount = 5,
   });
@@ -43,16 +48,16 @@ class CartographerLevel {
 /// règlent au playtest.
 abstract final class CartographerLevels {
   static const all = [
-    CartographerLevel(number: 1, itemCount: 3, studySeconds: 12, distractionSeconds: 3, aid: RecallAid.choices),
-    CartographerLevel(number: 2, itemCount: 4, studySeconds: 12, distractionSeconds: 3, aid: RecallAid.choices),
-    CartographerLevel(number: 3, itemCount: 4, studySeconds: 10, distractionSeconds: 5, aid: RecallAid.choices),
-    CartographerLevel(number: 4, itemCount: 5, studySeconds: 10, distractionSeconds: 5, aid: RecallAid.firstLetter),
-    CartographerLevel(number: 5, itemCount: 5, studySeconds: 8, distractionSeconds: 6, aid: RecallAid.firstLetter),
-    CartographerLevel(number: 6, itemCount: 6, studySeconds: 8, distractionSeconds: 6, aid: RecallAid.firstLetter),
-    CartographerLevel(number: 7, itemCount: 6, studySeconds: 6, distractionSeconds: 8, aid: RecallAid.free),
-    CartographerLevel(number: 8, itemCount: 7, studySeconds: 6, distractionSeconds: 8, aid: RecallAid.free),
-    CartographerLevel(number: 9, itemCount: 8, studySeconds: 5, distractionSeconds: 10, aid: RecallAid.free),
-    CartographerLevel(number: 10, itemCount: 8, studySeconds: 4, distractionSeconds: 10, aid: RecallAid.free),
+    CartographerLevel(number: 1, itemCount: 3, studySeconds: 12, distractionSeconds: 3, aid: RecallAid.choices, sequenceStepMillis: 1200),
+    CartographerLevel(number: 2, itemCount: 4, studySeconds: 12, distractionSeconds: 3, aid: RecallAid.choices, sequenceStepMillis: 1100),
+    CartographerLevel(number: 3, itemCount: 4, studySeconds: 10, distractionSeconds: 5, aid: RecallAid.choices, sequenceStepMillis: 1000),
+    CartographerLevel(number: 4, itemCount: 5, studySeconds: 10, distractionSeconds: 5, aid: RecallAid.firstLetter, sequenceStepMillis: 900),
+    CartographerLevel(number: 5, itemCount: 5, studySeconds: 8, distractionSeconds: 6, aid: RecallAid.firstLetter, sequenceStepMillis: 800),
+    CartographerLevel(number: 6, itemCount: 6, studySeconds: 8, distractionSeconds: 6, aid: RecallAid.firstLetter, sequenceStepMillis: 700),
+    CartographerLevel(number: 7, itemCount: 6, studySeconds: 6, distractionSeconds: 8, aid: RecallAid.free, sequenceStepMillis: 600),
+    CartographerLevel(number: 8, itemCount: 7, studySeconds: 6, distractionSeconds: 8, aid: RecallAid.free, sequenceStepMillis: 520),
+    CartographerLevel(number: 9, itemCount: 8, studySeconds: 5, distractionSeconds: 10, aid: RecallAid.free, sequenceStepMillis: 450),
+    CartographerLevel(number: 10, itemCount: 8, studySeconds: 4, distractionSeconds: 10, aid: RecallAid.free, sequenceStepMillis: 400),
   ];
 
   static CartographerLevel get first => all.first;

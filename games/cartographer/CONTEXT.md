@@ -40,7 +40,7 @@ Une Épreuve inspirée du jeu de Kim : N Éléments d'une même Catégorie sont 
 _Code_: `Tray`
 
 **Séquence**:
-Une Épreuve inspirée de Simon et des blocs de Corsi : les Éléments sont surlignés un à un (leur nom s'affiche brièvement) et le joueur les touche dans le même ordre. La séquence s'allonge à chaque réussite ; le Score est la longueur atteinte. L'ordre est évalué.
+Une Épreuve à la manière du Simon et des blocs de Corsi : un jeu de 6 Éléments, dont un est surligné (son nom s'affiche brièvement), puis le joueur le touche. À chaque réussite, la même séquence est rejouée avec un Élément de plus tiré au hasard dans le jeu, le même pouvant revenir. Elle dure tant que le joueur réussit ; la première faute la termine et le Score est la plus longue séquence reproduite sans faute. L'ordre est évalué. Les pays restent pâles d'un bout à l'autre et seul l'Élément surligné ou touché reprend sa teinte ; une ville touchée garde son nom jusqu'au toucher suivant. La difficulté est la vitesse du visionnage (par Niveau), pas la taille du jeu.
 _Code_: `Sequence`
 
 **Exploration**:

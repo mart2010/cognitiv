@@ -43,6 +43,13 @@ extension CartographerPuzzleJsonEncoding on CartographerPuzzle {
             'presentation': presentation.name,
             'questions': [for (final q in questions) q.toJson()],
           },
+        Sequence(:final language, :final pool, :final steps, :final stepMillis) => {
+            'type': 'sequence',
+            'language': language.name,
+            'pool': pool,
+            'steps': steps,
+            'stepMillis': stepMillis,
+          },
         DelayedRecall(:final language, :final questions) => {
             'type': 'delayedRecall',
             'language': language.name,
@@ -61,6 +68,15 @@ class CartographerPuzzleCodec {
 
   static CartographerPuzzle fromJson(Map<String, dynamic> json) {
     final language = NameLanguage.values.byName(json['language'] as String);
+    // Les questions d'une Séquence se déduisent de ses étapes.
+    if (json['type'] == 'sequence') {
+      return Sequence(
+        language: language,
+        pool: [for (final id in json['pool'] as List) id as String],
+        steps: [for (final id in json['steps'] as List) id as String],
+        stepMillis: json['stepMillis'] as int,
+      );
+    }
     final questions = [
       for (final q in json['questions'] as List) questionFromJson(q as Map<String, dynamic>),
     ];

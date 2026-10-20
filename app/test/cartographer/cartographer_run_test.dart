@@ -40,6 +40,8 @@ List<String> _play(CartographerRun run, bool Function(cartographer.CartographerP
         run.next();
       case RunStage.trayRecall:
         throw StateError('pas de Plateau dans cette Partie');
+      case RunStage.sequence:
+        throw StateError('pas de Séquence dans cette Partie');
       case RunStage.finished:
         break;
     }

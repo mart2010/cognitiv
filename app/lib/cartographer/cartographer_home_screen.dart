@@ -41,6 +41,10 @@ class _CartographerHomeScreenState extends State<CartographerHomeScreen> {
       cartographer.Category.cities => 'villes',
       _ => 'lieux',
     };
+    if (_trial == cartographer.Trial.sequence) {
+      final seconds = (level.sequenceStepMillis / 1000).toStringAsFixed(level.sequenceStepMillis % 100 == 0 ? 1 : 2);
+      return 'jeu de ${cartographer.PrepareSequencePuzzles.poolSize} $what, ${seconds.replaceAll('.', ',')} s par repère, objectif : ${cartographer.ComputeSequenceScore.targetLength}';
+    }
     if (_trial == cartographer.Trial.tray) {
       if (_presentation == cartographer.TrayPresentation.oneByOne) {
         return '${level.itemCount} $what par plateau, un toutes les ${cartographer.PrepareTrayPuzzles.secondsPerItem} s, ${level.distractionSeconds} s d\'attente';
@@ -96,7 +100,7 @@ class _CartographerHomeScreenState extends State<CartographerHomeScreen> {
           listenable: services.profile,
           builder: (context, _) {
             final profile = services.profile.profile;
-            final canPlay = _trial == cartographer.Trial.tray || profile.canAsk(services.baseMap);
+            final canPlay = _trial != cartographer.Trial.flashStudy || profile.canAsk(services.baseMap);
             return Column(
             children: [
               Expanded(
@@ -111,13 +115,16 @@ class _CartographerHomeScreenState extends State<CartographerHomeScreen> {
                       segments: const [
                         ButtonSegment(value: cartographer.Trial.flashStudy, label: Text('Étude-éclair')),
                         ButtonSegment(value: cartographer.Trial.tray, label: Text('Plateau')),
+                        ButtonSegment(value: cartographer.Trial.sequence, label: Text('Séquence')),
                       ],
                       selected: {_trial},
                       onSelectionChanged: (selection) => setState(() => _trial = selection.single),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      _trial == cartographer.Trial.tray
+                      _trial == cartographer.Trial.sequence
+                          ? 'Des repères surlignés un à un, à retoucher dans le même ordre ; la séquence s\'allonge.'
+                          : _trial == cartographer.Trial.tray
                           ? (_presentation == cartographer.TrayPresentation.oneByOne
                               ? 'Des repères montrés un à un, puis tous à replacer.'
                               : 'Des repères montrés ensemble, puis tous à replacer.')

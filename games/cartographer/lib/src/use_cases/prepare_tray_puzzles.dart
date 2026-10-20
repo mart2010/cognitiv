@@ -1,9 +1,8 @@
 import '../domain_services/decoy_placer.dart';
+import '../domain_services/item_picker.dart';
 import '../entities/cartographer_puzzle.dart';
 import '../entities/facet.dart';
 import '../entities/geometry.dart';
-import '../entities/item.dart';
-import '../entities/knowledge.dart';
 import '../entities/link.dart';
 import '../entities/played_puzzle.dart';
 import '../entities/recall_aid.dart';
@@ -28,15 +27,16 @@ class PrepareTrayPuzzles implements PuzzlePreparer {
   static const secondsPerItem = 2;
 
   final RandomSource random;
+  final ItemPicker picker;
   final TrayPresentation presentation;
 
-  PrepareTrayPuzzles({required this.random, this.presentation = TrayPresentation.together});
+  PrepareTrayPuzzles({required this.random, this.presentation = TrayPresentation.together}) : picker = ItemPicker(random);
 
   @override
   List<CartographerPuzzle> call(PrepareCartographerRequest request, List<PlayedPuzzle> history) {
     if (history.isNotEmpty) return [];
     final baseMap = request.baseMap;
-    final categories = _shuffled([
+    final categories = picker.shuffled([
       for (final category in baseMap.categories) if (request.profile.categories.contains(category)) category,
     ]);
     if (categories.isEmpty) {
@@ -55,7 +55,7 @@ class PrepareTrayPuzzles implements PuzzlePreparer {
         used.removeAll(pool.map((item) => item.id));
         candidates = pool;
       }
-      final chosen = _leastKnownFirst(request, candidates).take(size).toList();
+      final chosen = picker.leastKnownFirst(request, linkKind, candidates).take(size).toList();
       used.addAll(chosen.map((item) => item.id));
       trays.add(
         Tray(
@@ -64,7 +64,7 @@ class PrepareTrayPuzzles implements PuzzlePreparer {
           studySeconds: presentation == TrayPresentation.oneByOne ? chosen.length * secondsPerItem : request.level.studySeconds,
           distractionSeconds: request.level.distractionSeconds,
           questions: [
-            for (final item in _shuffled(chosen))
+            for (final item in picker.shuffled(chosen))
               RecallQuestion(itemId: item.id, kind: linkKind, aid: RecallAid.free),
           ],
           // Des points candidats seulement quand les Éléments sont des Points (villes).
@@ -75,25 +75,5 @@ class PrepareTrayPuzzles implements PuzzlePreparer {
       );
     }
     return trays;
-  }
-
-  /// Du moins connu au mieux connu, en mélangeant dans chaque état de connaissance.
-  List<Item> _leastKnownFirst(PrepareCartographerRequest request, List<Item> items) {
-    int rank(Item item) => Knowledge.rank(request.mastery.of(request.baseMap.id, item.id, linkKind));
-    return [
-      for (var r = 0; r <= 2; r++) ..._shuffled([for (final item in items) if (rank(item) == r) item]),
-    ];
-  }
-
-  /// Mélange de Fisher-Yates avec le hasard injecté.
-  List<T> _shuffled<T>(Iterable<T> source) {
-    final list = source.toList();
-    for (var i = list.length - 1; i > 0; i--) {
-      final j = random.nextInt(i + 1);
-      final tmp = list[i];
-      list[i] = list[j];
-      list[j] = tmp;
-    }
-    return list;
   }
 }

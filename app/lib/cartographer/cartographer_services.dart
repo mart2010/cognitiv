@@ -45,6 +45,7 @@ class CartographerServices {
         prepare: switch (trial) {
           cartographer.Trial.flashStudy => cartographer.PrepareCartographerPuzzles(random: randomFactory()),
           cartographer.Trial.tray => cartographer.PrepareTrayPuzzles(random: randomFactory(), presentation: presentation),
+          cartographer.Trial.sequence => cartographer.PrepareSequencePuzzles(random: randomFactory()),
         },
         onFinished: mastery.replace,
       );

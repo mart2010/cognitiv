@@ -1,5 +1,8 @@
+import 'facet.dart';
 import 'geo_point.dart';
+import 'link.dart';
 import 'name_language.dart';
+import 'recall_aid.dart';
 import 'trial.dart';
 import 'recall_question.dart';
 
@@ -67,6 +70,35 @@ final class Tray extends StudyPuzzle {
     this.decoys = const [],
     this.presentation = TrayPresentation.together,
   });
+}
+
+/// Séquence (`games/cartographer/CONTEXT.md`) : une manche d'une Partie à la Simon. `steps` est la
+/// séquence à reproduire : les Éléments surlignés un à un, `stepMillis` chacun, que le joueur touche
+/// dans le même ordre. Un Élément peut revenir plusieurs fois. `pool` est le jeu, les Éléments d'où
+/// la séquence est tirée. Chaque manche réussie rallonge la précédente d'un Élément (ADR 0010), sans
+/// limite : la Partie dure tant que le joueur réussit.
+final class Sequence extends CartographerPuzzle {
+  static const linkKind = LinkKind(Facet.name, Facet.position);
+
+  final List<String> pool;
+  final List<String> steps;
+  final int stepMillis;
+
+  Sequence({required super.language, required List<String> pool, required List<String> steps, required this.stepMillis})
+      : pool = List.unmodifiable(pool),
+        steps = List.unmodifiable(steps),
+        super(
+          questions: [
+            for (final id in steps) RecallQuestion(itemId: id, kind: linkKind, aid: RecallAid.free),
+          ],
+        ) {
+    if (steps.isEmpty) throw ArgumentError('Une Séquence montre au moins un Élément.');
+    final outsiders = steps.where((id) => !pool.contains(id));
+    if (outsiders.isNotEmpty) throw ArgumentError('Éléments hors du jeu : $outsiders.');
+  }
+
+  /// Le nombre d'Éléments à reproduire.
+  int get length => steps.length;
 }
 
 /// Bilan : le Rappel différé de Liens étudiés plus tôt dans la Partie, sans les remontrer.

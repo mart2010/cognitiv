@@ -7,6 +7,10 @@ enum Trial {
 
   /// Plateau : des Éléments montrés ensemble, puis tous replacés.
   tray,
+
+  /// Séquence : des Éléments surlignés un à un, à retoucher dans le même ordre ; elle s'allonge
+  /// à chaque réussite.
+  sequence,
 }
 
 /// Comment un Plateau montre ses Éléments pendant l'étude : un réglage de l'Épreuve, pas une

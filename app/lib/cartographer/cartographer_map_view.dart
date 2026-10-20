@@ -44,6 +44,11 @@ class CartographerMapView extends StatefulWidget {
   /// sont mis en retrait : pour concentrer le regard sur ceux à retenir sans changer leurs couleurs.
   final Set<String>? focus;
 
+  /// Avec une mise en avant, met en retrait tous les pays qui n'en font pas partie, même quand
+  /// elle ne vise aucun pays (vide) : le fond reste pâle d'un bout à l'autre, au lieu de passer de
+  /// normal à pâle quand un pays s'allume.
+  final bool dimUnfocused;
+
   /// Point à marquer (le toucher du joueur).
   final cartographer.GeoPoint? marker;
 
@@ -64,6 +69,7 @@ class CartographerMapView extends StatefulWidget {
     this.labels = const {},
     this.labelTexts = const {},
     this.focus,
+    this.dimUnfocused = false,
     this.marker,
     this.markers = const [],
     this.candidates = const [],
@@ -128,6 +134,7 @@ class _CartographerMapViewState extends State<CartographerMapView> {
                   labels: widget.labels,
                   labelTexts: widget.labelTexts,
                   focus: widget.focus,
+                  dimUnfocused: widget.dimUnfocused,
                   marker: widget.marker,
                   markers: widget.markers,
                   candidates: widget.candidates,
@@ -154,6 +161,7 @@ class _MapPainter extends CustomPainter {
   final Set<String> labels;
   final Map<String, String> labelTexts;
   final Set<String>? focus;
+  final bool dimUnfocused;
   final cartographer.GeoPoint? marker;
   final List<MapMarker> markers;
   final List<cartographer.GeoPoint> candidates;
@@ -171,6 +179,7 @@ class _MapPainter extends CustomPainter {
     required this.labels,
     required this.labelTexts,
     required this.focus,
+    required this.dimUnfocused,
     required this.marker,
     required this.markers,
     required this.candidates,
@@ -194,7 +203,7 @@ class _MapPainter extends CustomPainter {
     final areas = [for (final item in baseMap.items) if (item.geometry is cartographer.AreaGeometry) item];
     // Si la mise en avant ne vise aucun pays (on étudie des villes), les pays restent tous nets :
     // ils servent de repères.
-    final dimOthers = focused != null && areas.any((item) => focused.contains(item.id));
+    final dimOthers = focused != null && (dimUnfocused || areas.any((item) => focused.contains(item.id)));
     for (final item in areas) {
       final path = paths[item.id]!;
       final base = fills[item.id] ?? tints[item.id]!;
@@ -340,6 +349,7 @@ class _MapPainter extends CustomPainter {
       !mapEquals(old.labelTexts, labelTexts) ||
       !setEquals(old.focus, focus) ||
       old.labels != labels ||
+      old.dimUnfocused != dimUnfocused ||
       old.marker != marker ||
       !listEquals(old.markers, markers) ||
       !listEquals(old.candidates, candidates) ||

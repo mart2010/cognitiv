@@ -6,6 +6,7 @@ import 'cartographer_run.dart';
 import 'cartographer_services.dart';
 import 'question_view.dart';
 import 'study_views.dart';
+import 'sequence_views.dart';
 import 'tray_views.dart';
 import 'verdict_colors.dart';
 
@@ -91,6 +92,7 @@ class _CartographerRunScreenState extends State<CartographerRunScreen> {
       cartographer.Screening() => 'Première manche · $index sur $total',
       cartographer.FlashStudy() => '$_studyHeader · Rappel $index sur $total',
       cartographer.Tray() => '$_studyHeader · Rappel',
+      cartographer.Sequence(:final length) => 'Séquence de $length',
       cartographer.DelayedRecall() => 'Bilan · $index sur $total',
     };
   }
@@ -147,6 +149,19 @@ class _CartographerRunScreenState extends State<CartographerRunScreen> {
           onSubmit: _run.answerTray,
           onNext: _run.next,
           nextLabel: _run.studyNumber == _run.studyTotal ? 'Terminer' : 'Suivant',
+          sounds: widget.services.sounds,
+        );
+      case RunStage.sequence:
+        final sequence = _run.sequence;
+        return SequenceView(
+          key: ValueKey('sequence-${_run.history.length}'),
+          baseMap: _run.baseMap,
+          sequence: sequence,
+          language: _run.language,
+          header: _questionHeader,
+          judge: (index, answer) => _run.evaluate(_run.baseMap, sequence.questions[index], answer),
+          onSubmit: _run.answerSequence,
+          onNext: _run.next,
           sounds: widget.services.sounds,
         );
       case RunStage.questions:

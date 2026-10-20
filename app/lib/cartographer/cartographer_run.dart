@@ -18,6 +18,10 @@ enum RunStage {
   /// Le Rappel d'un Plateau : tous les Éléments à replacer, puis les verdicts d'un coup.
   trayRecall,
 
+  /// Une manche de Séquence : les Éléments sont surlignés un à un, puis le joueur les touche dans
+  /// le même ordre.
+  sequence,
+
   /// Plus d'Énigme : résultat.
   finished,
 }
@@ -38,6 +42,7 @@ class CartographerRun extends ChangeNotifier {
   final cartographer.ComputeCartographerScore computeScore;
   final cartographer.UpdateMastery updateMastery;
   final cartographer.SuggestLinkKinds suggestKinds;
+  final cartographer.ComputeSequenceScore computeSequenceScore;
 
   /// Appelée une fois, à la fin, avec la Maîtrise mise à jour.
   final void Function(cartographer.Mastery updated)? onFinished;
@@ -66,11 +71,13 @@ class CartographerRun extends ChangeNotifier {
     cartographer.ComputeCartographerScore? computeScore,
     cartographer.UpdateMastery? updateMastery,
     cartographer.SuggestLinkKinds? suggestKinds,
+    cartographer.ComputeSequenceScore? computeSequenceScore,
     this.onFinished,
   }) : evaluate = evaluate ?? cartographer.EvaluateCartographerAnswer(),
        computeScore = computeScore ?? cartographer.ComputeCartographerScore(),
        updateMastery = updateMastery ?? cartographer.UpdateMastery(),
-       suggestKinds = suggestKinds ?? cartographer.SuggestLinkKinds() {
+       suggestKinds = suggestKinds ?? cartographer.SuggestLinkKinds(),
+       computeSequenceScore = computeSequenceScore ?? cartographer.ComputeSequenceScore() {
     _advancePuzzle();
   }
 
@@ -92,6 +99,20 @@ class CartographerRun extends ChangeNotifier {
       history.where((p) => p.puzzle is cartographer.StudyPuzzle).length +
       (_current is cartographer.StudyPuzzle ? 1 : 0) +
       _queue.whereType<cartographer.StudyPuzzle>().length;
+
+  /// La manche de Séquence courante.
+  cartographer.Sequence get sequence => _current! as cartographer.Sequence;
+
+  /// Une Partie de Séquences ?
+  bool get isSequenceRun => (_current ?? history.last.puzzle) is cartographer.Sequence;
+
+  /// La plus longue séquence reproduite sans faute : le Score, avant le poids du Niveau.
+  int get longestSequence => [
+    0,
+    for (final played in history)
+      if (played.puzzle is cartographer.Sequence && played.verdicts.every((v) => v == cartographer.AnswerVerdict.exact))
+        (played.puzzle as cartographer.Sequence).length,
+  ].reduce((a, b) => a > b ? a : b);
 
   /// Une Partie de Plateaux ?
   bool get isTrayRun => (_current ?? history.last.puzzle) is cartographer.Tray;
@@ -161,11 +182,31 @@ class CartographerRun extends ChangeNotifier {
     return evaluations;
   }
 
+  /// Évalue la manche de Séquence : les Éléments touchés, dans l'ordre. Le joueur peut s'arrêter à
+  /// une faute, avec moins de réponses que de questions : ce qu'il n'a pas pu reproduire compte
+  /// pour raté.
+  List<cartographer.AnswerEvaluation> answerSequence(List<cartographer.CartographerAnswer> answers) {
+    _require(_stage == RunStage.sequence && !_answered, 'réponse hors manche de Séquence ou déjà donnée');
+    final questions = _current!.questions;
+    if (answers.length > questions.length) {
+      throw ArgumentError('${answers.length} réponse(s) pour ${questions.length} question(s).');
+    }
+    final evaluations = [for (var i = 0; i < answers.length; i++) evaluate(baseMap, questions[i], answers[i])];
+    _verdicts.addAll(evaluations.map((e) => e.verdict));
+    _verdicts.addAll(List.filled(questions.length - answers.length, cartographer.AnswerVerdict.wrong));
+    _answered = true;
+    notifyListeners();
+    return evaluations;
+  }
+
   /// Passe à la question suivante, ou à l'Énigme suivante après la dernière (après les verdicts,
   /// pour un Plateau).
   void next() {
-    _require((_stage == RunStage.questions || _stage == RunStage.trayRecall) && _answered, 'next avant une réponse');
-    _questionIndex = _stage == RunStage.trayRecall ? _current!.questions.length : _questionIndex + 1;
+    _require(
+      (_stage == RunStage.questions || _stage == RunStage.trayRecall || _stage == RunStage.sequence) && _answered,
+      'next avant une réponse',
+    );
+    _questionIndex = _stage == RunStage.questions ? _questionIndex + 1 : _current!.questions.length;
     _answered = false;
     if (_questionIndex >= _current!.questions.length) {
       history.add(cartographer.PlayedPuzzle(_current!, List.of(_verdicts)));
@@ -196,16 +237,22 @@ class CartographerRun extends ChangeNotifier {
     }
     _current = _queue.removeAt(0);
     _questionIndex = 0;
-    _stage = _current is cartographer.StudyPuzzle ? RunStage.studyIntro : RunStage.questions;
+    _stage = switch (_current) {
+      cartographer.StudyPuzzle() => RunStage.studyIntro,
+      cartographer.Sequence() => RunStage.sequence,
+      _ => RunStage.questions,
+    };
   }
 
   void _finish() {
     _current = null;
     _stage = RunStage.finished;
-    _result = computeScore(outcomes, level: level);
+    _result = history.any((p) => p.puzzle is cartographer.Sequence)
+        ? computeSequenceScore(history, level: level)
+        : computeScore(outcomes, level: level);
     _masteryAfter = updateMastery(masteryBefore, baseMap.id, history);
-    // Un Plateau ignore les genres de Lien du Profil : rien à suggérer.
-    _suggestedKinds = history.any((p) => p.puzzle is cartographer.Tray) ? const [] : suggestKinds(baseMap, profile, _masteryAfter!);
+    // Un Plateau et une Séquence ignorent les genres de Lien du Profil : rien à suggérer.
+    _suggestedKinds = history.any((p) => p.puzzle is cartographer.Tray || p.puzzle is cartographer.Sequence) ? const [] : suggestKinds(baseMap, profile, _masteryAfter!);
     onFinished?.call(_masteryAfter!);
   }
 

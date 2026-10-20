@@ -56,13 +56,19 @@ class _CartographerResultViewState extends State<CartographerResultView> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('${run.exactCount} sur ${run.outcomes.length}', key: const Key('result-count'), style: theme.textTheme.displaySmall),
-                const SizedBox(height: 4),
-                Text('réponses exactes', style: theme.textTheme.bodyLarge),
+                if (run.isSequenceRun) ...[
+                  Text('${run.longestSequence}', key: const Key('result-count'), style: theme.textTheme.displaySmall),
+                  const SizedBox(height: 4),
+                  Text('éléments dans la plus longue séquence', textAlign: TextAlign.center, style: theme.textTheme.bodyLarge),
+                ] else ...[
+                  Text('${run.exactCount} sur ${run.outcomes.length}', key: const Key('result-count'), style: theme.textTheme.displaySmall),
+                  const SizedBox(height: 4),
+                  Text('réponses exactes', style: theme.textTheme.bodyLarge),
+                ],
                 const SizedBox(height: 12),
                 Text('Score : ${run.result.score}', key: const Key('result-score'), style: theme.textTheme.titleLarge),
                 const SizedBox(height: 16),
-                Text(
+                if (!run.isSequenceRun) Text(
                   run.isTrayRun
                       ? [
                           for (var i = 0; i < run.trayResults.length; i++)

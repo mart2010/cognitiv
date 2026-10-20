@@ -25,6 +25,7 @@ export 'src/entities/trial.dart';
 
 export 'src/domain_services/decoy_placer.dart';
 export 'src/domain_services/hint_builder.dart';
+export 'src/domain_services/item_picker.dart';
 export 'src/domain_services/placement_judge.dart';
 export 'src/domain_services/text_matcher.dart';
 
@@ -35,8 +36,10 @@ export 'src/interface_adapters/cartographer_puzzle_codec.dart';
 export 'src/interface_adapters/system_random_source.dart';
 
 export 'src/use_cases/compute_cartographer_score.dart';
+export 'src/use_cases/compute_sequence_score.dart';
 export 'src/use_cases/evaluate_cartographer_answer.dart';
 export 'src/use_cases/prepare_cartographer_puzzles.dart';
+export 'src/use_cases/prepare_sequence_puzzles.dart';
 export 'src/use_cases/prepare_tray_puzzles.dart';
 export 'src/use_cases/puzzle_preparer.dart';
 export 'src/use_cases/suggest_link_kinds.dart';
