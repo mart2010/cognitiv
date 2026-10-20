@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../audio/game_sounds.dart';
 import 'cartographer_map_view.dart';
 import 'cartographer_shape_view.dart';
+import 'verdict_colors.dart';
 
 /// Une question de Rappel, quel que soit son genre de Lien : l'Indice (un texte, une forme, un
 /// pays surligné sur la carte), puis la réponse (toucher la carte pour Placer, ou nommer avec
@@ -38,9 +39,6 @@ class QuestionView extends StatefulWidget {
 }
 
 class _QuestionViewState extends State<QuestionView> {
-  static const _exact = Color(0xFF4CAF7A);
-  static const _close = Color(0xFFE8B84A);
-  static const _wrong = Color(0xFFD9695F);
 
   final _field = TextEditingController();
   cartographer.AnswerVerdict? _verdict;
@@ -71,13 +69,9 @@ class _QuestionViewState extends State<QuestionView> {
     _answer(cartographer.TypedAnswer(text));
   }
 
-  Color _colorOf(cartographer.AnswerVerdict v) => switch (v) {
-    cartographer.AnswerVerdict.exact => _exact,
-    cartographer.AnswerVerdict.close => _close,
-    cartographer.AnswerVerdict.wrong => _wrong,
-  };
+  Color _colorOf(cartographer.AnswerVerdict v) => verdictColor(v);
 
-  String _text(cartographer.Facet facet) => _item.textFor(facet, widget.language);
+  String _text(cartographer.Facet facet) => widget.baseMap.textFor(_item, facet, widget.language);
 
   String get _prompt {
     final item = _item;
@@ -90,14 +84,16 @@ class _QuestionViewState extends State<QuestionView> {
       (cartographer.Facet.capital, cartographer.Facet.name) =>
         'Quel pays a pour capitale : ${_text(cartographer.Facet.capital)} ?',
       (cartographer.Facet.position, cartographer.Facet.capital) => 'Quelle est la capitale de ce pays ?',
-      _ => 'Quel est ce pays ?',
+      _ => item.category == cartographer.Category.cities ? 'Quelle est cette ville ?' : 'Quel est ce pays ?',
     };
   }
 
   /// Ce qu'on affiche comme bonne réponse : toutes les capitales principales (la Bolivie en a deux).
   String get _expected => switch (_kind.answer) {
     cartographer.Facet.capital =>
-      (_item.primaryCapitals.isNotEmpty ? _item.primaryCapitals : _item.capitals)
+      (widget.baseMap.primaryCapitalsOf(_item).isNotEmpty
+              ? widget.baseMap.primaryCapitalsOf(_item)
+              : widget.baseMap.capitalsOf(_item))
           .map((c) => c.names.of(widget.language))
           .join(' ou '),
     _ => _text(cartographer.Facet.name),

@@ -19,6 +19,7 @@ class CartographerHomeScreen extends StatefulWidget {
 
 class _CartographerHomeScreenState extends State<CartographerHomeScreen> {
   var _levelNumber = 3;
+  var _trial = cartographer.Trial.flashStudy;
 
   @override
   void initState() {
@@ -28,13 +29,31 @@ class _CartographerHomeScreenState extends State<CartographerHomeScreen> {
 
   cartographer.CartographerLevel get _level => cartographer.CartographerLevels.byNumber(_levelNumber);
 
-  String _levelSummary(cartographer.CartographerLevel level) {
+  String _levelSummary(cartographer.CartographerLevel level, Set<cartographer.Category> categories) {
     final aid = switch (level.aid) {
       cartographer.RecallAid.choices => 'avec propositions',
       cartographer.RecallAid.firstLetter => 'avec la première lettre',
       cartographer.RecallAid.free => 'sans aide',
     };
-    return '${level.itemCount} pays par étude, ${level.studySeconds} s pour les retenir, $aid';
+    final what = switch (categories.length == 1 ? categories.single : null) {
+      cartographer.Category.countries => 'pays',
+      cartographer.Category.cities => 'villes',
+      _ => 'lieux',
+    };
+    if (_trial == cartographer.Trial.tray) {
+      return '${level.itemCount} $what par plateau, ${level.studySeconds} s pour les retenir, ${level.distractionSeconds} s d\'attente';
+    }
+    return '${level.itemCount} $what par étude, ${level.studySeconds} s pour les retenir, $aid';
+  }
+
+  /// Les genres de Lien qui concernent au moins un Élément des Catégories activées : inutile de
+  /// proposer « reconnaître à sa forme » quand on ne travaille que les villes.
+  List<cartographer.LinkKind> _shownKinds(cartographer.CartographerProfile profile) {
+    final baseMap = widget.services.baseMap;
+    return [
+      for (final kind in playableLinkKinds)
+        if (baseMap.items.any((item) => profile.categories.contains(item.category) && kind.appliesTo(baseMap, item))) kind,
+    ];
   }
 
   Future<void> _confirmReset() async {
@@ -71,13 +90,35 @@ class _CartographerHomeScreenState extends State<CartographerHomeScreen> {
       body: SafeArea(
         child: ListenableBuilder(
           listenable: services.profile,
-          builder: (context, _) => Column(
+          builder: (context, _) {
+            final profile = services.profile.profile;
+            final canPlay = _trial == cartographer.Trial.tray || profile.canAsk(services.baseMap);
+            return Column(
             children: [
               Expanded(
                 child: ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
                     Text('Amérique du Sud', textAlign: TextAlign.center, style: theme.textTheme.titleLarge),
+                    const SizedBox(height: 16),
+                    SegmentedButton<cartographer.Trial>(
+                      key: const Key('trial-selector'),
+                      showSelectedIcon: false,
+                      segments: const [
+                        ButtonSegment(value: cartographer.Trial.flashStudy, label: Text('Étude-éclair')),
+                        ButtonSegment(value: cartographer.Trial.tray, label: Text('Plateau')),
+                      ],
+                      selected: {_trial},
+                      onSelectionChanged: (selection) => setState(() => _trial = selection.single),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _trial == cartographer.Trial.tray
+                          ? 'Des repères montrés ensemble, puis tous à replacer.'
+                          : 'Un repérage, puis l\'étude de ce qu\'on ne connaît pas.',
+                      key: const Key('trial-summary'),
+                      style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                    ),
                     const SizedBox(height: 20),
                     Text('Niveau $_levelNumber', key: const Key('level-title'), style: theme.textTheme.titleMedium),
                     Slider(
@@ -89,36 +130,71 @@ class _CartographerHomeScreenState extends State<CartographerHomeScreen> {
                       label: '$_levelNumber',
                       onChanged: (v) => setState(() => _levelNumber = v.round()),
                     ),
-                    Text(_levelSummary(_level), key: const Key('level-summary'), style: theme.textTheme.bodyMedium),
+                    Text(
+                      _levelSummary(_level, profile.categories),
+                      key: const Key('level-summary'),
+                      style: theme.textTheme.bodyMedium,
+                    ),
                     const SizedBox(height: 24),
-                    Text('Ce que je veux travailler', style: theme.textTheme.titleMedium),
-                    for (final kind in playableLinkKinds)
+                    Text('Ce que je veux apprendre', style: theme.textTheme.titleMedium),
+                    for (final category in services.baseMap.categories)
                       SwitchListTile(
-                        key: Key('kind-${kind.cue.name}-${kind.answer.name}'),
+                        key: Key('category-${category.id}'),
                         contentPadding: EdgeInsets.zero,
-                        title: Text(linkKindLabel(kind)),
-                        value: services.profile.profile.linkKinds.contains(kind),
-                        onChanged: (on) => services.profile.setKindActive(kind, on),
+                        title: Text(category.names.of(services.language)),
+                        value: profile.categories.contains(category),
+                        onChanged: (on) => services.profile.setCategoryActive(category, on),
                       ),
+                    // Un Plateau pose toujours « placer », sans genre de Lien à choisir.
+                    if (_trial == cartographer.Trial.flashStudy) ...[
+                      const SizedBox(height: 16),
+                      Text('Ce que je veux travailler', style: theme.textTheme.titleMedium),
+                      for (final kind in _shownKinds(profile))
+                        SwitchListTile(
+                          key: Key('kind-${kind.cue.name}-${kind.answer.name}'),
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(linkKindLabel(kind)),
+                          value: profile.linkKinds.contains(kind),
+                          onChanged: (on) => services.profile.setKindActive(kind, on),
+                        ),
+                    ],
                   ],
                 ),
               ),
               // Le bouton principal reste toujours visible, hors de la liste qui défile.
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: FilledButton(
-                    key: const Key('start'),
-                    onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute<void>(builder: (_) => CartographerRunScreen(services: services, level: _level)),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (!canPlay)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Text(
+                          'Rien à poser avec ces réglages : activez au moins une façon de travailler.',
+                          key: const Key('cannot-play'),
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.error),
+                        ),
+                      ),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                        key: const Key('start'),
+                        onPressed: canPlay
+                            ? () => Navigator.of(context).push(
+                                MaterialPageRoute<void>(builder: (_) => CartographerRunScreen(services: services, level: _level, trial: _trial)),
+                              )
+                            : null,
+                        child: const Text('Jouer'),
+                      ),
                     ),
-                    child: const Text('Jouer'),
-                  ),
+                  ],
                 ),
               ),
             ],
-          ),
+            );
+          },
         ),
       ),
     );

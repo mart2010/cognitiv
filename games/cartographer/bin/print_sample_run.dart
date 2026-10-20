@@ -57,6 +57,8 @@ void _print(BaseMap baseMap, CartographerPuzzle puzzle, List<AnswerVerdict> verd
       print('Repérage (${puzzle.questions.length} questions)');
     case FlashStudy(:final studySeconds, :final distractionSeconds):
       print('Étude-éclair : ${studySeconds}s d\'étude, ${distractionSeconds}s de distraction');
+    case Tray(:final studySeconds):
+      print('Plateau : ${puzzle.questions.length} à replacer, ${studySeconds}s d\'étude');
     case DelayedRecall():
       print('Bilan (rappel différé)');
   }

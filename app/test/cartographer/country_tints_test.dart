@@ -12,12 +12,9 @@ cartographer.BaseMap _load() => cartographer.BaseMapCodec.fromJson(
 
 cartographer.Item _item(String id, Set<String> neighbors) => cartographer.Item(
   id: id,
-  kind: cartographer.ItemKind.country,
-  belongsTo: id,
+  category: cartographer.Category.countries,
   names: cartographer.LocalizedText(en: id, fr: id),
-  capitals: const [],
-  anchor: const cartographer.GeoPoint(0, 0),
-  outline: const [],
+  geometry: cartographer.AreaGeometry(polygons: const [], labelAnchor: const cartographer.GeoPoint(0, 0)),
   neighbors: neighbors,
 );
 

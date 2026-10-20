@@ -2,7 +2,7 @@ import 'cartographer_answer.dart';
 import 'cartographer_puzzle.dart';
 
 /// Phase d'une Partie à laquelle appartient une question, pour le Score.
-enum PuzzlePhase { screening, study, delayed }
+enum PuzzlePhase { screening, study, delayed, tray }
 
 /// Le résultat d'une question, pour le calcul du Score et de la Maîtrise.
 class QuestionOutcome {
@@ -27,6 +27,7 @@ class PlayedPuzzle {
         Screening() => PuzzlePhase.screening,
         FlashStudy() => PuzzlePhase.study,
         DelayedRecall() => PuzzlePhase.delayed,
+        Tray() => PuzzlePhase.tray,
       };
 
   List<QuestionOutcome> get outcomes => [for (final v in verdicts) QuestionOutcome(v, phase: phase)];

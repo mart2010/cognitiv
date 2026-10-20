@@ -27,9 +27,9 @@ class EvaluateCartographerAnswer {
         final Facet facet = question.kind.answer;
         final confusable = {
           for (final other in baseMap.items)
-            if (other.id != item.id && other.hasFacet(facet)) ...other.acceptedTexts(facet),
+            if (other.id != item.id && baseMap.hasFacet(other, facet)) ...baseMap.acceptedTexts(other, facet),
         };
-        final matches = TextMatcher.matches(text, item.acceptedTexts(facet), confusable: confusable);
+        final matches = TextMatcher.matches(text, baseMap.acceptedTexts(item, facet), confusable: confusable);
         return AnswerEvaluation(matches ? AnswerVerdict.exact : AnswerVerdict.wrong);
       default:
         throw ArgumentError('La réponse ${answer.runtimeType} ne convient pas au Geste ${question.kind.gesture.name}.');

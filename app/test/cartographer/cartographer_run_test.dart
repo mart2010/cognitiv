@@ -9,10 +9,10 @@ cartographer.BaseMap _loadMap() => cartographer.BaseMapCodec.fromJson(
   jsonDecode(File('assets/maps/south_america.json').readAsStringSync()) as Map<String, dynamic>,
 );
 
-cartographer.CartographerAnswer _right(cartographer.RecallQuestion q, cartographer.Item item) =>
+cartographer.CartographerAnswer _right(cartographer.BaseMap map, cartographer.RecallQuestion q, cartographer.Item item) =>
     q.kind.gesture == cartographer.Gesture.place
     ? cartographer.PlacedAnswer(item.anchor)
-    : cartographer.TypedAnswer(item.textFor(q.kind.answer, cartographer.NameLanguage.fr));
+    : cartographer.TypedAnswer(map.textFor(item, q.kind.answer, cartographer.NameLanguage.fr));
 
 cartographer.CartographerAnswer _wrong(cartographer.RecallQuestion q) => q.kind.gesture == cartographer.Gesture.place
     ? const cartographer.PlacedAnswer(cartographer.GeoPoint(-30, -40)) // en plein Atlantique
@@ -36,8 +36,10 @@ List<String> _play(CartographerRun run, bool Function(cartographer.CartographerP
         run.endDistraction();
       case RunStage.questions:
         final q = run.question;
-        run.answer(knows(run.current!, q) ? _right(q, run.questionItem) : _wrong(q));
+        run.answer(knows(run.current!, q) ? _right(run.baseMap, q, run.questionItem) : _wrong(q));
         run.next();
+      case RunStage.trayRecall:
+        throw StateError('pas de Plateau dans cette Partie');
       case RunStage.finished:
         break;
     }

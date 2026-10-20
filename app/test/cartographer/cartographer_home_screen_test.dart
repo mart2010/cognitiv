@@ -51,6 +51,8 @@ void main() {
     await pump(tester, services);
     const extra = cartographer.LinkKind(cartographer.Facet.position, cartographer.Facet.capital);
     await tester.scrollUntilVisible(find.byKey(const Key('kind-position-capital')), 100, scrollable: find.byType(Scrollable).first);
+    await tester.drag(find.byType(ListView), const Offset(0, -200)); // hors de la zone du bouton épinglé
+    await tester.pump();
     await tester.tap(find.byKey(const Key('kind-position-capital')));
     await tester.pump();
     expect(services.profile.profile.linkKinds, contains(extra));

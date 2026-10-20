@@ -69,11 +69,11 @@ Future<void> answerCurrent(WidgetTester tester, cartographer.BaseMap map, {requi
     correct ? await tapMapOn(tester, map, item.id) : await tapOcean(tester, map);
     return;
   }
-  final right = item.textFor(question.kind.answer, cartographer.NameLanguage.fr);
+  final right = map.textFor(item, question.kind.answer, cartographer.NameLanguage.fr);
   if (question.aid == cartographer.RecallAid.choices) {
     final index = correct
         ? question.choices.indexOf(right)
-        : question.choices.indexWhere((c) => c != right && !item.acceptedTexts(question.kind.answer).contains(c));
+        : question.choices.indexWhere((c) => c != right && !map.acceptedTexts(item, question.kind.answer).contains(c));
     await tester.tap(find.byKey(Key('choice-$index')));
   } else {
     await tester.enterText(find.byKey(const Key('answer-field')), correct ? right : 'zzzzzz');

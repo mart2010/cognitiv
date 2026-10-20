@@ -31,6 +31,14 @@ class BaseMapSpec {
   /// clé = code `GU_A3` de l'unité.
   final Map<String, String> capitalOverrides;
 
+  /// Nombre de villes de la Carte, capitales comprises (toujours retenues) ; le reste va aux
+  /// plus peuplées, ce qui sert de critère de notoriété.
+  final int maxCities;
+
+  /// Plafond de villes par État, capitales comprises : sans lui, le plus peuplé (le Brésil)
+  /// prend la moitié de la Carte.
+  final int maxCitiesPerState;
+
   /// Corrections des noms français de Natural Earth (accents manquants), clé = valeur brute.
   final Map<String, String> frenchNameFixes;
 
@@ -40,6 +48,8 @@ class BaseMapSpec {
     required this.frame,
     this.minPolygonArea = 0.02,
     this.simplifyTolerance = 0.05,
+    this.maxCities = 30,
+    this.maxCitiesPerState = 4,
     this.capitalOverrides = const {},
     this.frenchNameFixes = const {},
   });

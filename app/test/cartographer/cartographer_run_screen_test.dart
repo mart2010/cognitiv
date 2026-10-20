@@ -109,7 +109,7 @@ void main() {
     expect(find.text('Vous connaissiez déjà tout ça !'), findsOneWidget);
     expect(find.text('13 sur 13'), findsOneWidget);
     expect(find.byKey(const Key('suggestion')), findsOneWidget);
-    expect(find.text('Essayer aussi : nommer un pays montré sur la carte ?'), findsOneWidget);
+    expect(find.text('Essayer aussi : nommer ce qui est montré sur la carte ?'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('suggest-accept')));
     await tester.pump();

@@ -29,7 +29,8 @@ class CartographerScoreResult {
 ///
 /// Le verdict « niveau franchi » et la suggestion se jugent sur le **Bilan seul**, pour qu'un
 /// débutant qui apprend ne soit pas pénalisé par son point de départ ; sans Bilan (rien à
-/// étudier : le joueur connaissait tout), sur le Repérage. La longueur d'une Partie varie, rien
+/// étudier : le joueur connaissait tout), sur le Repérage ; pour une Partie de Plateaux, sur tous
+/// les Plateaux (il n'y a ni Repérage ni Bilan). La longueur d'une Partie varie, rien
 /// ici ne suppose un nombre fixe de questions.
 class ComputeCartographerScore {
   static const delayedWeight = 2.0;
@@ -44,9 +45,11 @@ class ComputeCartographerScore {
       final weight = outcome.phase == PuzzlePhase.delayed ? delayedWeight : 1.0;
       credit += outcome.verdict.credit * weight;
     }
-    final judged = outcomes.any((o) => o.phase == PuzzlePhase.delayed)
-        ? outcomes.where((o) => o.phase == PuzzlePhase.delayed)
-        : outcomes.where((o) => o.phase == PuzzlePhase.screening);
+    final judged = switch (outcomes.map((o) => o.phase).toSet()) {
+      final phases when phases.contains(PuzzlePhase.delayed) => outcomes.where((o) => o.phase == PuzzlePhase.delayed),
+      final phases when phases.contains(PuzzlePhase.tray) => outcomes.where((o) => o.phase == PuzzlePhase.tray),
+      _ => outcomes.where((o) => o.phase == PuzzlePhase.screening),
+    };
     final ratio = judged.isEmpty ? 0.0 : judged.map((o) => o.verdict.credit).reduce((a, b) => a + b) / judged.length;
     final cleared = ratio >= thresholds.minimumRatioToClearLevel;
     final suggestion = cleared && CartographerLevels.hasNext(level)

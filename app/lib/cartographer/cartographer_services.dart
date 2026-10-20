@@ -29,15 +29,19 @@ class CartographerServices {
   /// Charge ce que le joueur a réglé et ce que le jeu sait de lui.
   Future<void> load() => Future.wait([mastery.load(), profile.load()]);
 
-  /// Une Partie neuve à ce Niveau. La Maîtrise mise à jour est stockée à la fin, jamais en cas
-  /// d'abandon.
-  CartographerRun newRun(cartographer.CartographerLevel level) => CartographerRun(
-    baseMap: baseMap,
-    level: level,
-    profile: profile.profile,
-    language: language,
-    masteryBefore: mastery.mastery,
-    prepare: cartographer.PrepareCartographerPuzzles(random: randomFactory()),
-    onFinished: mastery.replace,
-  );
+  /// Une Partie neuve à ce Niveau, dans l'Épreuve choisie. La Maîtrise mise à jour est stockée à
+  /// la fin, jamais en cas d'abandon.
+  CartographerRun newRun(cartographer.CartographerLevel level, [cartographer.Trial trial = cartographer.Trial.flashStudy]) =>
+      CartographerRun(
+        baseMap: baseMap,
+        level: level,
+        profile: profile.profile,
+        language: language,
+        masteryBefore: mastery.mastery,
+        prepare: switch (trial) {
+          cartographer.Trial.flashStudy => cartographer.PrepareCartographerPuzzles(random: randomFactory()),
+          cartographer.Trial.tray => cartographer.PrepareTrayPuzzles(random: randomFactory()),
+        },
+        onFinished: mastery.replace,
+      );
 }

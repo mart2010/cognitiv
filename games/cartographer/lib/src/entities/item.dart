@@ -1,79 +1,61 @@
-import 'facet.dart';
+import 'attributes.dart';
+import 'category.dart';
 import 'geo_point.dart';
+import 'geometry.dart';
 import 'name_language.dart';
 
-enum ItemKind { country, territory }
-
 enum CapitalRole {
-  /// Capitale d'État (une Bolivie a deux capitales principales : La Paz et Sucre).
+  /// Capitale d'État (la Bolivie en a deux principales : La Paz et Sucre).
   primary,
 
   /// Capitale alternative (ex. Valparaíso pour le Chili, siège du Parlement).
   alt,
 }
 
-class Capital {
-  final LocalizedText names;
-  final GeoPoint position;
-  final CapitalRole role;
-  final int? population;
-  const Capital({required this.names, required this.position, required this.role, this.population});
-}
-
-/// Élément géographique à apprendre : un pays ou un territoire (`games/recall/CONTEXT.md`).
+/// Élément géographique à apprendre : un pays, une ville, un fleuve
+/// (`games/cartographer/CONTEXT.md`). Il appartient à une Catégorie, qui impose le type de sa
+/// Géométrie, et porte des Attributs. Ses Relations avec les autres Éléments sont des
+/// identifiants : le voisinage (symétrique) et l'inclusion (une ville dans son pays).
 class Item {
   final String id;
-  final ItemKind kind;
-
-  /// Code de l'État auquel il appartient (le sien pour un pays, FRA pour la Guyane).
-  final String belongsTo;
+  final Category category;
   final LocalizedText names;
-  final List<Capital> capitals;
-
-  /// Point d'ancrage de l'étiquette sur la Scène.
-  final GeoPoint anchor;
-  final List<Polygon> outline;
+  final Geometry geometry;
+  final Attributes attributes;
   final Set<String> neighbors;
-  final int? population;
 
-  /// Clé de l'image du drapeau, absente tant que les drapeaux ne sont pas dans les données.
-  final String? flagAsset;
+  /// L'Élément qui contient celui-ci (le pays d'une ville), s'il y en a un.
+  final String? containedIn;
 
-  const Item({
+  Item({
     required this.id,
-    required this.kind,
-    required this.belongsTo,
+    required this.category,
     required this.names,
-    required this.capitals,
-    required this.anchor,
-    required this.outline,
+    required this.geometry,
+    Attributes? attributes,
     this.neighbors = const {},
-    this.population,
-    this.flagAsset,
-  });
+    this.containedIn,
+  }) : attributes = attributes ?? Attributes.empty {
+    if (geometry.kind != category.geometryKind) {
+      throw ArgumentError(
+        'Élément $id : la Catégorie ${category.id} veut une Géométrie ${category.geometryKind.name}, pas ${geometry.kind.name}.',
+      );
+    }
+  }
 
-  bool hasFacet(Facet facet) => switch (facet) {
-        Facet.name => true,
-        Facet.capital => capitals.isNotEmpty,
-        Facet.position || Facet.shape => outline.isNotEmpty,
-        Facet.flag => flagAsset != null,
+  GeoPoint get anchor => geometry.anchor;
+
+  /// Les polygones de l'Élément, vides s'il n'a pas de Géométrie en surface.
+  List<Polygon> get outline => switch (geometry) {
+        AreaGeometry(:final polygons) => polygons,
+        _ => const [],
       };
 
-  List<Capital> get primaryCapitals => capitals.where((c) => c.role == CapitalRole.primary).toList();
+  int? get population => attributes.integer(AttributeKey.population);
 
-  /// Le texte affiché pour une Facette textuelle (la première capitale principale s'il y
-  /// en a plusieurs).
-  String textFor(Facet facet, NameLanguage language) => switch (facet) {
-        Facet.name => names.of(language),
-        Facet.capital => (primaryCapitals.isNotEmpty ? primaryCapitals : capitals).first.names.of(language),
-        _ => throw ArgumentError('${facet.name} n\'est pas une Facette textuelle.'),
-      };
+  String? get flagAsset => attributes.text(AttributeKey.flag);
 
-  /// Tous les textes acceptés comme réponse pour une Facette textuelle, dans les deux
-  /// langues, toutes capitales (principales et alternatives) confondues.
-  Set<String> acceptedTexts(Facet facet) => switch (facet) {
-        Facet.name => names.all,
-        Facet.capital => {for (final capital in capitals) ...capital.names.all},
-        _ => throw ArgumentError('${facet.name} n\'est pas une Facette textuelle.'),
-      };
+  bool get isCapital => attributes.flag(AttributeKey.capital);
+
+  CapitalRole get capitalRole => CapitalRole.values.byName(attributes.text(AttributeKey.capitalRole) ?? 'primary');
 }

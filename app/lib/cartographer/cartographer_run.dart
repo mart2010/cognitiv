@@ -15,6 +15,9 @@ enum RunStage {
   /// Une question à la fois : Repérage, Rappel après Étude, ou Bilan.
   questions,
 
+  /// Le Rappel d'un Plateau : tous les Éléments à replacer, puis les verdicts d'un coup.
+  trayRecall,
+
   /// Plus d'Énigme : résultat.
   finished,
 }
@@ -30,7 +33,7 @@ class CartographerRun extends ChangeNotifier {
   final cartographer.NameLanguage language;
   final cartographer.Mastery masteryBefore;
 
-  final cartographer.PrepareCartographerPuzzles prepare;
+  final cartographer.PuzzlePreparer prepare;
   final cartographer.EvaluateCartographerAnswer evaluate;
   final cartographer.ComputeCartographerScore computeScore;
   final cartographer.UpdateMastery updateMastery;
@@ -79,15 +82,26 @@ class CartographerRun extends ChangeNotifier {
   cartographer.RecallQuestion get question => _current!.questions[_questionIndex];
   cartographer.Item get questionItem => baseMap.itemById(question.itemId);
 
-  /// Le Lot d'étude de l'Étude courante.
-  cartographer.FlashStudy get study => _current! as cartographer.FlashStudy;
+  /// L'Étude courante : un Lot d'étude (Étude-éclair) ou un Plateau.
+  cartographer.StudyPuzzle get study => _current! as cartographer.StudyPuzzle;
 
-  /// Étude courante (à partir de 1) et nombre total d'Études, connu dès que le Repérage est joué.
-  int get studyNumber => history.where((p) => p.puzzle is cartographer.FlashStudy).length + 1;
+  /// Étude courante (à partir de 1) et nombre total d'Études, connu dès que le Repérage est joué
+  /// (pour un Plateau, connu dès le début : toute la Partie est préparée d'un coup).
+  int get studyNumber => history.where((p) => p.puzzle is cartographer.StudyPuzzle).length + 1;
   int get studyTotal =>
-      history.where((p) => p.puzzle is cartographer.FlashStudy).length +
-      (_current is cartographer.FlashStudy ? 1 : 0) +
-      _queue.whereType<cartographer.FlashStudy>().length;
+      history.where((p) => p.puzzle is cartographer.StudyPuzzle).length +
+      (_current is cartographer.StudyPuzzle ? 1 : 0) +
+      _queue.whereType<cartographer.StudyPuzzle>().length;
+
+  /// Une Partie de Plateaux ?
+  bool get isTrayRun => (_current ?? history.last.puzzle) is cartographer.Tray;
+
+  /// Le résultat de chaque Plateau joué : combien replacés exactement, sur combien.
+  List<({int exact, int total})> get trayResults => [
+    for (final played in history)
+      if (played.puzzle is cartographer.Tray)
+        (exact: played.verdicts.where((v) => v == cartographer.AnswerVerdict.exact).length, total: played.verdicts.length),
+  ];
 
   // Résultat, disponible quand la Partie est finie.
   cartographer.CartographerScoreResult get result => _result!;
@@ -118,7 +132,7 @@ class CartographerRun extends ChangeNotifier {
 
   void endDistraction() {
     _require(_stage == RunStage.distraction, 'endDistraction hors de la Distraction');
-    _stage = RunStage.questions;
+    _stage = _current is cartographer.Tray ? RunStage.trayRecall : RunStage.questions;
     notifyListeners();
   }
 
@@ -132,10 +146,26 @@ class CartographerRun extends ChangeNotifier {
     return evaluation;
   }
 
-  /// Passe à la question suivante, ou à l'Énigme suivante après la dernière.
+  /// Évalue d'un coup les réponses d'un Plateau, une par question et dans l'ordre des questions.
+  /// Aucun verdict n'est connu avant : le joueur les a tous placés avant de les voir.
+  List<cartographer.AnswerEvaluation> answerTray(List<cartographer.CartographerAnswer> answers) {
+    _require(_stage == RunStage.trayRecall && !_answered, 'réponse hors Rappel de Plateau ou déjà donnée');
+    final questions = _current!.questions;
+    if (answers.length != questions.length) {
+      throw ArgumentError('${answers.length} réponse(s) pour ${questions.length} question(s).');
+    }
+    final evaluations = [for (var i = 0; i < questions.length; i++) evaluate(baseMap, questions[i], answers[i])];
+    _verdicts.addAll(evaluations.map((e) => e.verdict));
+    _answered = true;
+    notifyListeners();
+    return evaluations;
+  }
+
+  /// Passe à la question suivante, ou à l'Énigme suivante après la dernière (après les verdicts,
+  /// pour un Plateau).
   void next() {
-    _require(_stage == RunStage.questions && _answered, 'next avant une réponse');
-    _questionIndex++;
+    _require((_stage == RunStage.questions || _stage == RunStage.trayRecall) && _answered, 'next avant une réponse');
+    _questionIndex = _stage == RunStage.trayRecall ? _current!.questions.length : _questionIndex + 1;
     _answered = false;
     if (_questionIndex >= _current!.questions.length) {
       history.add(cartographer.PlayedPuzzle(_current!, List.of(_verdicts)));
@@ -166,7 +196,7 @@ class CartographerRun extends ChangeNotifier {
     }
     _current = _queue.removeAt(0);
     _questionIndex = 0;
-    _stage = _current is cartographer.FlashStudy ? RunStage.studyIntro : RunStage.questions;
+    _stage = _current is cartographer.StudyPuzzle ? RunStage.studyIntro : RunStage.questions;
   }
 
   void _finish() {
@@ -174,7 +204,8 @@ class CartographerRun extends ChangeNotifier {
     _stage = RunStage.finished;
     _result = computeScore(outcomes, level: level);
     _masteryAfter = updateMastery(masteryBefore, baseMap.id, history);
-    _suggestedKinds = suggestKinds(baseMap, profile, _masteryAfter!);
+    // Un Plateau ignore les genres de Lien du Profil : rien à suggérer.
+    _suggestedKinds = history.any((p) => p.puzzle is cartographer.Tray) ? const [] : suggestKinds(baseMap, profile, _masteryAfter!);
     onFinished?.call(_masteryAfter!);
   }
 

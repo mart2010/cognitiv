@@ -1,18 +1,18 @@
-/// Facette d'un Élément : une manière de le connaître (`games/recall/CONTEXT.md`). Les
-/// Facettes de la première tranche ; les Grandeurs et les Relations viendront avec leurs
-/// Gestes. Le Drapeau est une apparence visuelle comme le Contour : il n'est proposé que
-/// pour les Éléments qui en ont un.
+/// Facette d'un Élément : une manière de le connaître (`games/cartographer/CONTEXT.md`). Les
+/// Facettes de la première tranche ; les autres Attributs (population, langues) et les Relations
+/// viendront avec leurs Épreuves. Le Drapeau est une apparence visuelle comme le Contour : il
+/// n'est proposé que pour les Éléments qui en ont un.
 enum Facet {
   /// Le nom de l'Élément (Attribut).
   name,
 
-  /// La capitale (Attribut).
+  /// La capitale d'un pays : la ville qu'il contient et qui est marquée capitale (Relation).
   capital,
 
   /// L'emplacement sur la Scène (Position).
   position,
 
-  /// Le contour, montré seul (Forme).
+  /// Le contour, montré seul (Forme). Seulement pour une Géométrie en surface.
   shape,
 
   /// Le drapeau (Forme, apparence visuelle).

@@ -72,3 +72,28 @@ List<Point>? simplifyRing(List<Point> ring, double tolerance) {
   final result = [...firstHalf, ...secondHalf.skip(1)];
   return result.length >= 4 ? result : null;
 }
+
+/// Distance plane (en degrés) du point au bord de l'anneau.
+double distanceToRing(Point p, List<Point> ring) {
+  var best = double.infinity;
+  for (var i = 0; i < ring.length - 1; i++) {
+    best = math.min(best, _distanceToSegment(p, ring[i], ring[i + 1]));
+  }
+  return best;
+}
+
+/// Le point est-il dans le polygone (anneau extérieur, moins les trous) ? Lancer de rayon.
+bool pointInPolygon(Point p, List<List<Point>> polygon) =>
+    _inRing(p, polygon.first) && !polygon.skip(1).any((hole) => _inRing(p, hole));
+
+bool _inRing(Point p, List<Point> ring) {
+  var inside = false;
+  for (var i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    final a = ring[i];
+    final b = ring[j];
+    if ((a.lat > p.lat) != (b.lat > p.lat) && p.lon < (b.lon - a.lon) * (p.lat - a.lat) / (b.lat - a.lat) + a.lon) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}

@@ -1,3 +1,4 @@
+import 'base_map.dart';
 import 'facet.dart';
 import 'item.dart';
 
@@ -14,7 +15,7 @@ class LinkKind {
 
   Gesture get gesture => answer == Facet.position ? Gesture.place : Gesture.naming;
 
-  bool appliesTo(Item item) => item.hasFacet(cue) && item.hasFacet(answer);
+  bool appliesTo(BaseMap baseMap, Item item) => baseMap.hasFacet(item, cue) && baseMap.hasFacet(item, answer);
 
   /// Les genres de Lien de la première tranche.
   static const supported = [

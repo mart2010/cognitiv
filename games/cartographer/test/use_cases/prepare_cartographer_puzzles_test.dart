@@ -9,7 +9,7 @@ const _capitalOfName = LinkKind(Facet.name, Facet.capital);
 
 void main() {
   final map = loadSouthAmerica();
-  final allIds = map.items.map((i) => i.id).toSet();
+  final allIds = map.itemsOf(Category.countries).map((i) => i.id).toSet();
 
   PrepareCartographerRequest request({
     int level = 3,
@@ -110,20 +110,23 @@ void main() {
     test('au-delà de la limite, un échantillon des moins connus', () {
       Item fake(int i) => Item(
             id: 'X$i',
-            kind: ItemKind.country,
-            belongsTo: 'X$i',
+            category: Category.countries,
             names: LocalizedText(en: 'Land $i', fr: 'Terre $i'),
-            capitals: [
-              Capital(
-                names: LocalizedText(en: 'Cap $i', fr: 'Cap $i'),
-                position: const GeoPoint(0, 0),
-                role: CapitalRole.primary,
-              ),
-            ],
-            anchor: const GeoPoint(0, 0),
-            outline: const [],
+            geometry: AreaGeometry(polygons: const [], labelAnchor: const GeoPoint(0, 0)),
           );
-      final big = BaseMap(id: 'big', frame: map.frame, items: [for (var i = 0; i < 30; i++) fake(i)]);
+      Item capital(int i) => Item(
+            id: 'C$i',
+            category: Category.cities,
+            names: LocalizedText(en: 'Cap $i', fr: 'Cap $i'),
+            geometry: const PointGeometry(GeoPoint(0, 0)),
+            attributes: Attributes({AttributeKey.capital: true}),
+            containedIn: 'X$i',
+          );
+      final big = BaseMap(
+        id: 'big',
+        frame: map.frame,
+        items: [for (var i = 0; i < 30; i++) fake(i), for (var i = 0; i < 30; i++) capital(i)],
+      );
       final profile = CartographerProfile({_capitalOfName});
       // 5 Éléments fragiles, 25 inconnus : les 20 questions viennent des inconnus.
       final mastery = Mastery({for (var i = 0; i < 5; i++) MasteryKey('big', 'X$i', _capitalOfName): Knowledge.shaky});
@@ -136,6 +139,72 @@ void main() {
       expect(ids, hasLength(PrepareCartographerPuzzles.screeningLimit));
       expect(ids.toSet(), hasLength(20));
       expect(ids.where((id) => int.parse(id.substring(1)) < 5), isEmpty);
+    });
+  });
+
+  group('Catégories activées', () {
+    final cityIds = map.itemsOf(Category.cities).map((i) => i.id).toSet();
+    final placeAndName = {_positionOfName, const LinkKind(Facet.position, Facet.name)};
+
+    test('par défaut, seuls les pays sont posés, jamais une ville', () {
+      for (var seed = 0; seed < 10; seed++) {
+        expect(screening(seed).questions.map((q) => q.itemId).toSet(), allIds);
+      }
+    });
+
+    test('avec les villes seules, seules les villes sont posées : placer et nommer, sans contour ni capitale', () {
+      final profile = CartographerProfile(placeAndName, categories: {Category.cities});
+      for (var seed = 0; seed < 10; seed++) {
+        final questions = screening(seed, profile: profile).questions;
+        expect(questions, hasLength(PrepareCartographerPuzzles.screeningLimit)); // 30 villes, échantillon de 20
+        expect(cityIds.containsAll(questions.map((q) => q.itemId)), isTrue);
+        expect(questions.map((q) => q.kind).toSet(), isNot(contains(_capitalOfName)));
+      }
+    });
+
+    test("un Profil de villes avec un genre qui ne s'applique qu'aux pays est refusé", () {
+      final profile = CartographerProfile({_capitalOfName}, categories: {Category.cities});
+      expect(() => screening(1, profile: profile), throwsArgumentError);
+    });
+
+    test('les propositions de nom viennent de la même Catégorie : une ville ne se mêle pas aux pays', () {
+      final profile = CartographerProfile({const LinkKind(Facet.position, Facet.name)}, categories: {Category.cities});
+      final cityNames = {for (final c in map.itemsOf(Category.cities)) c.names.fr};
+      for (var seed = 0; seed < 10; seed++) {
+        for (final q in screening(seed, profile: profile).questions.where((q) => q.choices.isNotEmpty)) {
+          expect(cityNames.containsAll(q.choices), isTrue, reason: '${q.choices}');
+        }
+      }
+      for (var seed = 0; seed < 10; seed++) {
+        final countryNames = {for (final c in map.itemsOf(Category.countries)) c.names.fr};
+        for (final q in screening(seed).questions.where((q) => q.kind.answer == Facet.name && q.choices.isNotEmpty)) {
+          expect(countryNames.containsAll(q.choices), isTrue, reason: '${q.choices}');
+        }
+      }
+    });
+
+    test('avec pays et villes, les deux Catégories sont posées', () {
+      final profile = CartographerProfile(
+        {const LinkKind(Facet.position, Facet.name), const LinkKind(Facet.name, Facet.position)},
+        categories: {Category.countries, Category.cities},
+      );
+      final ids = screening(1, profile: profile).questions.map((q) => q.itemId).toSet();
+      expect(ids.intersection(allIds), isNotEmpty);
+      expect(ids.intersection(cityIds), isNotEmpty);
+    });
+
+    test('une ville se place : le Verdict suit sa distance, pas un contour', () {
+      final lima = map.itemById('city:lima');
+      final question = RecallQuestion(itemId: lima.id, kind: const LinkKind(Facet.name, Facet.position), aid: RecallAid.free);
+      final exact = EvaluateCartographerAnswer()(map, question, PlacedAnswer(lima.anchor));
+      final far = EvaluateCartographerAnswer()(map, question, PlacedAnswer(map.itemById('city:buenos-aires').anchor));
+      expect(exact.verdict, AnswerVerdict.exact);
+      expect(far.verdict, AnswerVerdict.wrong);
+    });
+
+    test('une ville se nomme : « Sao Paulo » sans accent est accepté', () {
+      final question = RecallQuestion(itemId: 'city:sao-paulo', kind: const LinkKind(Facet.position, Facet.name), aid: RecallAid.free);
+      expect(EvaluateCartographerAnswer()(map, question, const TypedAnswer('Sao Paulo')).isCorrect, isTrue);
     });
   });
 
@@ -246,7 +315,7 @@ void main() {
             expect(q.aid, RecallAid.choices);
             expect(q.choices, hasLength(4));
             expect(q.choices.toSet(), hasLength(4));
-            expect(q.choices, contains(item.textFor(q.kind.answer, NameLanguage.fr)));
+            expect(q.choices, contains(map.textFor(item, q.kind.answer, NameLanguage.fr)));
           } else {
             expect(q.choices, isEmpty);
             expect(q.aid, RecallAid.free);
@@ -259,8 +328,8 @@ void main() {
       for (var seed = 0; seed < 20; seed++) {
         for (final q in allQuestions(seed, 2).where((q) => q.choices.isNotEmpty)) {
           final item = map.itemById(q.itemId);
-          final accepted = item.acceptedTexts(q.kind.answer).map(TextMatcher.normalize);
-          final correct = TextMatcher.normalize(item.textFor(q.kind.answer, NameLanguage.fr));
+          final accepted = map.acceptedTexts(item, q.kind.answer).map(TextMatcher.normalize);
+          final correct = TextMatcher.normalize(map.textFor(item, q.kind.answer, NameLanguage.fr));
           for (final choice in q.choices.where((c) => TextMatcher.normalize(c) != correct)) {
             expect(accepted, isNot(contains(TextMatcher.normalize(choice))));
           }

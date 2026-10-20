@@ -9,8 +9,9 @@ import '../entities/mastery.dart';
 class SuggestLinkKinds {
   List<LinkKind> call(BaseMap baseMap, CartographerProfile profile, Mastery mastery) {
     var anyLink = false;
-    for (final item in baseMap.items) {
-      for (final kind in profile.linkKinds.where((k) => k.appliesTo(item))) {
+    final pool = [for (final item in baseMap.items) if (profile.categories.contains(item.category)) item];
+    for (final item in pool) {
+      for (final kind in profile.linkKinds.where((k) => k.appliesTo(baseMap, item))) {
         anyLink = true;
         final knowledge = mastery.of(baseMap.id, item.id, kind);
         if (knowledge == null || !knowledge.isKnown) return const [];
@@ -19,7 +20,7 @@ class SuggestLinkKinds {
     if (!anyLink) return const [];
     return [
       for (final kind in LinkKind.supported)
-        if (!profile.linkKinds.contains(kind) && baseMap.items.any(kind.appliesTo)) kind,
+        if (!profile.linkKinds.contains(kind) && pool.any((item) => kind.appliesTo(baseMap, item))) kind,
     ];
   }
 }

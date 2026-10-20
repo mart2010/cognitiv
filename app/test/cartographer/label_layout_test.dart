@@ -117,7 +117,7 @@ void main() {
     });
 
     test('même les treize libellés à la fois restent sans chevauchement', () {
-      final placed = placeLabels(const Size(380, 560), [for (final item in map.items) request(item, w: 60, h: 18)]);
+      final placed = placeLabels(const Size(380, 560), [for (final item in map.itemsOf(cartographer.Category.countries)) request(item, w: 60, h: 18)]);
       expect(_noOverlap(placed), isTrue);
     });
 

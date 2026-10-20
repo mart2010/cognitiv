@@ -2,15 +2,19 @@ import 'package:cartographer/cartographer.dart' as cartographer;
 import 'package:flutter/material.dart';
 
 import 'cartographer_map_view.dart';
-
-/// Annonce d'une Étude : combien de pays, combien de temps. Le décompte ne démarre qu'au toucher de
-/// « Commencer », pour que le temps ne parte pas avant que le joueur regarde la carte.
+/// Annonce d'une Étude : combien d'Éléments, combien de temps. Le décompte ne démarre qu'au toucher
+/// de « Commencer », pour que le temps ne parte pas avant que le joueur regarde la carte. Sans
+/// [title], l'annonce parle de pays (l'Étude-éclair d'origine).
 class StudyIntroView extends StatelessWidget {
-  final cartographer.FlashStudy study;
+  final cartographer.StudyPuzzle study;
   final String header;
   final VoidCallback onStart;
+  final String? title;
 
-  const StudyIntroView({super.key, required this.study, required this.header, required this.onStart});
+  /// Une phrase de plus sous la durée (ex. ce qui est attendu ensuite).
+  final String? note;
+
+  const StudyIntroView({super.key, required this.study, required this.header, required this.onStart, this.title, this.note});
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +30,7 @@ class StudyIntroView extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  count == 1 ? 'Retenez ce pays' : 'Retenez ces $count pays',
+                  title ?? (count == 1 ? 'Retenez ce pays' : 'Retenez ces $count pays'),
                   key: const Key('study-intro'),
                   textAlign: TextAlign.center,
                   style: theme.textTheme.headlineSmall,
@@ -36,6 +40,15 @@ class StudyIntroView extends StatelessWidget {
                   'Vous aurez ${study.studySeconds} secondes.',
                   style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                 ),
+                if (note != null) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    note!,
+                    key: const Key('study-note'),
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                  ),
+                ],
               ],
             ),
           ),
@@ -50,7 +63,7 @@ class StudyIntroView extends StatelessWidget {
 /// retrait, et une barre fine se vide. Finir plus tôt est permis (« Prêt ») et ne rapporte rien.
 class StudyView extends StatefulWidget {
   final cartographer.BaseMap baseMap;
-  final cartographer.FlashStudy study;
+  final cartographer.StudyPuzzle study;
   final cartographer.NameLanguage language;
   final String header;
   final VoidCallback onDone;
@@ -102,7 +115,7 @@ class _StudyViewState extends State<StudyView> with SingleTickerProviderStateMix
       final item = widget.baseMap.itemById(q.itemId);
       final name = item.names.of(widget.language);
       final usesCapital = q.kind.cue == cartographer.Facet.capital || q.kind.answer == cartographer.Facet.capital;
-      texts[q.itemId] = usesCapital ? '$name\n${item.textFor(cartographer.Facet.capital, widget.language)}' : name;
+      texts[q.itemId] = usesCapital ? '$name\n${widget.baseMap.textFor(item, cartographer.Facet.capital, widget.language)}' : name;
     }
     return texts;
   }

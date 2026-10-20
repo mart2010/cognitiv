@@ -63,7 +63,12 @@ class _CartographerResultViewState extends State<CartographerResultView> {
                 Text('Score : ${run.result.score}', key: const Key('result-score'), style: theme.textTheme.titleLarge),
                 const SizedBox(height: 16),
                 Text(
-                  run.missedAtScreening == 0
+                  run.isTrayRun
+                      ? [
+                          for (var i = 0; i < run.trayResults.length; i++)
+                            'Plateau ${i + 1} : ${run.trayResults[i].exact} sur ${run.trayResults[i].total}',
+                        ].join('\n')
+                      : run.missedAtScreening == 0
                       ? 'Vous connaissiez déjà tout ça !'
                       : (studied == 1 ? 'Vous avez étudié 1 pays.' : 'Vous avez étudié $studied pays.'),
                   key: const Key('result-summary'),

@@ -111,7 +111,7 @@ class SharedPreferencesCartographerProfileStore implements CartographerProfileSt
 }
 
 /// Garde le Profil courant, le persiste et prévient l'interface. Il doit toujours rester au
-/// moins un genre de Lien (sinon plus aucune question possible).
+/// moins un genre de Lien et une Catégorie (sinon plus aucune question possible).
 class CartographerProfileController extends ChangeNotifier {
   final CartographerProfileStore store;
   cartographer.CartographerProfile _profile = cartographer.CartographerProfile.defaults();
@@ -132,8 +132,20 @@ class CartographerProfileController extends ChangeNotifier {
     if (kinds.isEmpty || (kinds.length == _profile.linkKinds.length && kinds.containsAll(_profile.linkKinds))) {
       return Future.value();
     }
-    _profile = cartographer.CartographerProfile(kinds);
+    return _replace(_profile.copyWith(linkKinds: kinds));
+  }
+
+  /// Active ou désactive une Catégorie. Refuse de désactiver la dernière.
+  Future<void> setCategoryActive(cartographer.Category category, bool active) {
+    final categories = {..._profile.categories};
+    active ? categories.add(category) : categories.remove(category);
+    if (categories.isEmpty || categories.length == _profile.categories.length) return Future.value();
+    return _replace(_profile.copyWith(categories: categories));
+  }
+
+  Future<void> _replace(cartographer.CartographerProfile next) {
+    _profile = next;
     notifyListeners();
-    return store.save(_profile);
+    return store.save(next);
   }
 }

@@ -1,10 +1,27 @@
 import 'package:cartographer/cartographer.dart' as cartographer;
-import 'package:flutter/foundation.dart' show mapEquals, setEquals;
+import 'package:flutter/foundation.dart' show listEquals, mapEquals, setEquals;
 import 'package:flutter/material.dart';
 
 import 'country_tints.dart';
 import 'label_layout.dart';
 import 'map_projection.dart';
+
+/// Un repère posé par le joueur sur la carte : un rond numéroté (ou lettré) de la couleur voulue,
+/// par exemple l'endroit où il croit qu'est la quatrième ville d'un Plateau.
+class MapMarker {
+  final cartographer.GeoPoint point;
+  final String text;
+  final Color color;
+
+  const MapMarker({required this.point, required this.text, required this.color});
+
+  @override
+  bool operator ==(Object other) =>
+      other is MapMarker && other.point == point && other.text == text && other.color == color;
+
+  @override
+  int get hashCode => Object.hash(point, text, color);
+}
 
 /// La Scène du Cartographe : les contours des Éléments d'une Carte de base, où l'on touche
 /// pour placer. Se pince pour zoomer (les petits pays, Guyane ou Suriname, se touchent mal
@@ -30,6 +47,9 @@ class CartographerMapView extends StatefulWidget {
   /// Point à marquer (le toucher du joueur).
   final cartographer.GeoPoint? marker;
 
+  /// Repères numérotés posés par le joueur (les villes d'un Plateau qu'il a placées).
+  final List<MapMarker> markers;
+
   final cartographer.NameLanguage language;
   final ValueChanged<cartographer.GeoPoint>? onTap;
 
@@ -41,6 +61,7 @@ class CartographerMapView extends StatefulWidget {
     this.labelTexts = const {},
     this.focus,
     this.marker,
+    this.markers = const [],
     this.language = cartographer.NameLanguage.fr,
     this.onTap,
   });
@@ -103,6 +124,7 @@ class _CartographerMapViewState extends State<CartographerMapView> {
                   labelTexts: widget.labelTexts,
                   focus: widget.focus,
                   marker: widget.marker,
+                  markers: widget.markers,
                   language: widget.language,
                   tints: {for (final entry in _tints.entries) entry.key: palette[entry.value]},
                   border: scheme.outline,
@@ -127,6 +149,7 @@ class _MapPainter extends CustomPainter {
   final Map<String, String> labelTexts;
   final Set<String>? focus;
   final cartographer.GeoPoint? marker;
+  final List<MapMarker> markers;
   final cartographer.NameLanguage language;
   final Map<String, Color> tints;
   final Color border;
@@ -142,6 +165,7 @@ class _MapPainter extends CustomPainter {
     required this.labelTexts,
     required this.focus,
     required this.marker,
+    required this.markers,
     required this.language,
     required this.tints,
     required this.border,
@@ -159,22 +183,26 @@ class _MapPainter extends CustomPainter {
       ..color = border;
     // Ceux hors de la mise en avant d'abord, en retrait ; les autres par-dessus, avec leur contour net.
     final focused = focus;
-    for (final item in baseMap.items) {
+    final areas = [for (final item in baseMap.items) if (item.geometry is cartographer.AreaGeometry) item];
+    // Si la mise en avant ne vise aucun pays (on étudie des villes), les pays restent tous nets :
+    // ils servent de repères.
+    final dimOthers = focused != null && areas.any((item) => focused.contains(item.id));
+    for (final item in areas) {
       final path = paths[item.id]!;
       final base = fills[item.id] ?? tints[item.id]!;
-      final inFocus = focused == null || focused.contains(item.id);
+      final inFocus = !dimOthers || focused.contains(item.id);
       if (inFocus) continue;
       canvas.drawPath(path, Paint()..color = base.withValues(alpha: 0.28));
       canvas.drawPath(path, stroke..color = border.withValues(alpha: 0.35));
     }
     stroke.color = border;
-    for (final item in baseMap.items) {
+    for (final item in areas) {
       final path = paths[item.id]!;
       final base = fills[item.id] ?? tints[item.id]!;
-      if (focused != null && !focused.contains(item.id)) continue;
+      if (dimOthers && !focused.contains(item.id)) continue;
       canvas.drawPath(path, Paint()..color = base);
       canvas.drawPath(path, stroke);
-      if (focused != null) {
+      if (dimOthers) {
         canvas.drawPath(
           path,
           Paint()
@@ -185,13 +213,58 @@ class _MapPainter extends CustomPainter {
         );
       }
     }
+    _paintPoints(canvas);
     _paintLabels(canvas, size);
+    _paintMarkers(canvas);
     if (marker != null) {
       final center = projection.toCanvas(marker!);
       canvas.drawCircle(center, 7, Paint()..color = markerColor.withValues(alpha: 0.25));
       canvas.drawCircle(center, 3.5, Paint()..color = markerColor);
     }
   }
+
+  static const _markerRadius = 11.0;
+
+  void _paintMarkers(Canvas canvas) {
+    for (final marker in markers) {
+      final center = projection.toCanvas(marker.point);
+      canvas.drawCircle(center, _markerRadius + 1.5, Paint()..color = sea);
+      canvas.drawCircle(center, _markerRadius, Paint()..color = marker.color);
+      final text = TextPainter(
+        text: TextSpan(
+          text: marker.text,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: ThemeData.estimateBrightnessForColor(marker.color) == Brightness.dark ? Colors.white : Colors.black87,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      text.paint(canvas, center - Offset(text.width / 2, text.height / 2));
+    }
+  }
+
+  static const _dotRadius = 5.0;
+
+  /// Les villes (Points) ne se montrent que si on les vise : colorées, mises en avant ou nommées.
+  /// Sinon la carte ne révélerait pas ce qu'on demande de placer.
+  bool _isShown(cartographer.Item item) =>
+      fills.containsKey(item.id) || labels.contains(item.id) || (focus?.contains(item.id) ?? false);
+
+  void _paintPoints(Canvas canvas) {
+    for (final item in baseMap.items) {
+      if (item.geometry is! cartographer.PointGeometry || !_isShown(item)) continue;
+      final center = projection.toCanvas(item.anchor);
+      canvas.drawCircle(center, _dotRadius + 1.5, Paint()..color = sea);
+      canvas.drawCircle(center, _dotRadius, Paint()..color = fills[item.id] ?? markerColor);
+    }
+  }
+
+  /// Là où un libellé ne doit pas se poser : le contour d'un pays, ou le point d'une ville.
+  Rect _boundsOf(cartographer.Item item) => item.geometry is cartographer.PointGeometry
+      ? Rect.fromCircle(center: projection.toCanvas(item.anchor), radius: _dotRadius + 1.5)
+      : paths[item.id]!.getBounds();
 
   /// Pose les libellés sans chevauchement (`placeLabels`) : au centre du pays quand il y tient, sinon
   /// à côté, relié par un trait, avec un point sur le pays.
@@ -221,7 +294,7 @@ class _MapPainter extends CustomPainter {
       for (var i = 0; i < items.length; i++)
         LabelRequest(
           anchor: projection.toCanvas(items[i].anchor),
-          bounds: paths[items[i].id]!.getBounds(),
+          bounds: _boundsOf(items[i]),
           size: Size(inks[i].width, inks[i].height),
         ),
     ]);
@@ -249,6 +322,7 @@ class _MapPainter extends CustomPainter {
       !setEquals(old.focus, focus) ||
       old.labels != labels ||
       old.marker != marker ||
+      !listEquals(old.markers, markers) ||
       !mapEquals(old.tints, tints) ||
       !mapEquals(old.fills, fills) ||
       old.border != border ||

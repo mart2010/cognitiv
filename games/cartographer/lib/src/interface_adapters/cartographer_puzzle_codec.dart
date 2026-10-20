@@ -32,6 +32,13 @@ extension CartographerPuzzleJsonEncoding on CartographerPuzzle {
             'distractionSeconds': distractionSeconds,
             'questions': [for (final q in questions) q.toJson()],
           },
+        Tray(:final language, :final questions, :final studySeconds, :final distractionSeconds) => {
+            'type': 'tray',
+            'language': language.name,
+            'studySeconds': studySeconds,
+            'distractionSeconds': distractionSeconds,
+            'questions': [for (final q in questions) q.toJson()],
+          },
         DelayedRecall(:final language, :final questions) => {
             'type': 'delayedRecall',
             'language': language.name,
@@ -55,6 +62,12 @@ class CartographerPuzzleCodec {
     ];
     return switch (json['type']) {
       'flashStudy' => FlashStudy(
+          language: language,
+          questions: questions,
+          studySeconds: json['studySeconds'] as int,
+          distractionSeconds: json['distractionSeconds'] as int,
+        ),
+      'tray' => Tray(
           language: language,
           questions: questions,
           studySeconds: json['studySeconds'] as int,

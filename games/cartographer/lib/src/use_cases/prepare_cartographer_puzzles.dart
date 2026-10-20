@@ -1,36 +1,14 @@
 import '../domain_services/text_matcher.dart';
-import '../entities/base_map.dart';
 import '../entities/cartographer_answer.dart';
-import '../entities/cartographer_level.dart';
-import '../entities/cartographer_profile.dart';
 import '../entities/cartographer_puzzle.dart';
 import '../entities/item.dart';
 import '../entities/knowledge.dart';
 import '../entities/link.dart';
-import '../entities/mastery.dart';
-import '../entities/name_language.dart';
 import '../entities/played_puzzle.dart';
 import '../entities/recall_aid.dart';
 import '../entities/recall_question.dart';
 import 'ports/random_source.dart';
-
-class PrepareCartographerRequest {
-  final BaseMap baseMap;
-  final CartographerLevel level;
-  final CartographerProfile profile;
-  final NameLanguage language;
-
-  /// Ce que le joueur connaît déjà, d'après les Parties précédentes (ADR 0009).
-  final Mastery mastery;
-
-  PrepareCartographerRequest({
-    required this.baseMap,
-    required this.level,
-    required this.profile,
-    required this.language,
-    Mastery? mastery,
-  }) : mastery = mastery ?? Mastery.empty;
-}
+import 'puzzle_preparer.dart';
 
 /// Cas d'usage « préparer les énigmes d'un niveau » du contrat jeu/plateforme (ADR 0004),
 /// appelable plusieurs fois au fil de la Partie (ADR 0010). La plateforme le rappelle quand elle
@@ -41,7 +19,7 @@ class PrepareCartographerRequest {
 ///  2. Repérage joué : les **Études-éclair** des Éléments ratés (au plus `maxStudyCycles` Lots),
 ///     suivies du **Bilan** qui les redemande. Rien si le joueur n'a rien raté.
 ///  3. Sinon : terminée.
-class PrepareCartographerPuzzles {
+class PrepareCartographerPuzzles implements PuzzlePreparer {
   /// Au-delà, le Repérage prend un échantillon des Éléments les moins connus.
   static const screeningLimit = 20;
 
@@ -52,6 +30,7 @@ class PrepareCartographerPuzzles {
 
   PrepareCartographerPuzzles({required this.random});
 
+  @override
   List<CartographerPuzzle> call(PrepareCartographerRequest request, List<PlayedPuzzle> history) {
     if (history.isEmpty) return [_screening(request)];
     final first = history.first;
@@ -68,13 +47,13 @@ class PrepareCartographerPuzzles {
     final mastery = request.mastery;
     final baseMapId = request.baseMap.id;
     final eligible = [
-      for (final item in request.baseMap.items) if (_kindsFor(item, request.profile).isNotEmpty) item,
+      for (final item in _pool(request)) if (_kindsFor(request, item).isNotEmpty) item,
     ];
     if (eligible.isEmpty) {
       throw ArgumentError('Aucun Élément de ${request.baseMap.id} ne convient au Profil.');
     }
 
-    int itemRank(Item item) => _kindsFor(item, request.profile)
+    int itemRank(Item item) => _kindsFor(request, item)
         .map((k) => Knowledge.rank(mastery.of(baseMapId, item.id, k)))
         .reduce((a, b) => a < b ? a : b);
 
@@ -99,7 +78,7 @@ class PrepareCartographerPuzzles {
   /// reposé qu'après avoir épuisé tous les autres genres, et ne pourrait presque jamais devenir
   /// solide (ni être rétrogradé s'il est oublié).
   LinkKind _kindToAsk(PrepareCartographerRequest request, Item item) {
-    final kinds = _kindsFor(item, request.profile);
+    final kinds = _kindsFor(request, item);
     int rank(LinkKind k) => Knowledge.rank(request.mastery.of(request.baseMap.id, item.id, k));
     final unknown = [for (final k in kinds) if (rank(k) == 0) k];
     final shaky = [for (final k in kinds) if (rank(k) == 1) k];
@@ -151,8 +130,14 @@ class PrepareCartographerPuzzles {
 
   // --- Questions ---
 
-  List<LinkKind> _kindsFor(Item item, CartographerProfile profile) =>
-      [for (final kind in LinkKind.supported) if (profile.linkKinds.contains(kind) && kind.appliesTo(item)) kind];
+  /// Les Éléments des Catégories que le joueur a activées.
+  List<Item> _pool(PrepareCartographerRequest request) =>
+      [for (final item in request.baseMap.items) if (request.profile.categories.contains(item.category)) item];
+
+  List<LinkKind> _kindsFor(PrepareCartographerRequest request, Item item) => [
+        for (final kind in LinkKind.supported)
+          if (request.profile.linkKinds.contains(kind) && kind.appliesTo(request.baseMap, item)) kind,
+      ];
 
   RecallQuestion _question(PrepareCartographerRequest request, Item item, LinkKind kind) {
     final naming = kind.gesture == Gesture.naming;
@@ -166,15 +151,18 @@ class PrepareCartographerPuzzles {
   }
 
   /// Quatre propositions au plus : la bonne et jusqu'à trois autres Éléments de la même
-  /// Carte, sans jamais proposer un texte que la bonne réponse accepte aussi.
+  /// Catégorie, sans jamais proposer un texte que la bonne réponse accepte aussi.
   List<String> _choices(PrepareCartographerRequest request, Item item, LinkKind kind) {
     final facet = kind.answer;
     final language = request.language;
-    final correct = item.textFor(facet, language);
-    final forbidden = item.acceptedTexts(facet).map(TextMatcher.normalize).toSet();
+    final baseMap = request.baseMap;
+    final correct = baseMap.textFor(item, facet, language);
+    final forbidden = baseMap.acceptedTexts(item, facet).map(TextMatcher.normalize).toSet();
     final distractors = <String>{};
-    for (final other in _shuffled([for (final i in request.baseMap.items) if (i.id != item.id && i.hasFacet(facet)) i])) {
-      final text = other.textFor(facet, language);
+    for (final other in _shuffled([
+      for (final i in baseMap.itemsOf(item.category)) if (i.id != item.id && baseMap.hasFacet(i, facet)) i,
+    ])) {
+      final text = baseMap.textFor(other, facet, language);
       final normalized = TextMatcher.normalize(text);
       if (!forbidden.contains(normalized)) {
         forbidden.add(normalized);
